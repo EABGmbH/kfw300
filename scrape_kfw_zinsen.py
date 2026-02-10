@@ -92,13 +92,13 @@ def scrape_kfw_zinsen():
             print("⚠️ Warnung: Keine Zinssätze gefunden. Bitte HTML-Struktur prüfen!")
             print("Verwende Platzhalter-Werte...")
             
-            # Platzhalter (müssen manuell aktualisiert werden)
-            zinsen['rates']['4-10_jahre']['sollzins'] = 2.15
-            zinsen['rates']['4-10_jahre']['effektivzins'] = 2.17
-            zinsen['rates']['11-25_jahre']['sollzins'] = 2.45
-            zinsen['rates']['11-25_jahre']['effektivzins'] = 2.48
-            zinsen['rates']['26-35_jahre']['sollzins'] = 2.67
-            zinsen['rates']['26-35_jahre']['effektivzins'] = 2.71
+            # Platzhalter (aktualisiert: 10.02.2026)
+            zinsen['rates']['4-10_jahre']['sollzins'] = 0.01
+            zinsen['rates']['4-10_jahre']['effektivzins'] = 0.01
+            zinsen['rates']['11-25_jahre']['sollzins'] = 1.09
+            zinsen['rates']['11-25_jahre']['effektivzins'] = 1.10
+            zinsen['rates']['26-35_jahre']['sollzins'] = 1.32
+            zinsen['rates']['26-35_jahre']['effektivzins'] = 1.33
             zinsen['manual_update_required'] = True
         
         # Speichere als JSON
