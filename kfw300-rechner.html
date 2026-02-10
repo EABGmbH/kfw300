@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KfW 300 Förderrechner - Wohneigentum für Familien</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #3b5748;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            color: white;
+            margin-bottom: 25px;
+            padding: 12px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1em;
+            opacity: 0.95;
+            line-height: 1.3;
+        }
+
+        .calculator-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+            padding: 35px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Info Banner */
+        .info-banner {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .info-banner-content {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .info-banner-icon {
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .info-banner h3 {
+            color: #856404;
+            font-size: 1em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-banner p {
+            color: #856404;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Fortschrittsanzeige */
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 15px 10px;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            min-width: 70px;
+        }
+
+        .progress-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+        }
+
+        .progress-step.active .progress-dot {
+            background: #50685b;
+            color: white;
+            border-color: #50685b;
+            transform: scale(1.1);
+        }
+
+        .progress-step.completed .progress-dot {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .progress-step.completed .progress-dot::after {
+            content: '✓';
+            font-size: 1.5em;
+        }
+
+        .progress-label {
+            margin-top: 8px;
+            font-size: 0.75em;
+            color: #333;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .progress-step.active .progress-label {
+            color: #50685b;
+            font-weight: 700;
+        }
+
+        .progress-line {
+            flex: 1;
+            height: 2px;
+            background: #e0e0e0;
+            margin: 0 5px;
+            margin-bottom: 25px;
+            max-width: 60px;
+        }
+
+        /* Form Steps */
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section-question {
+            display: block;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .section-hint {
+            text-align: center;
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Slider für Kinder */
+        .slider-container {
+            max-width: 500px;
+            margin: 30px auto;
+        }
+
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #50685b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #42574c;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #50685b;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #50685b;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .error-message {
+            color: #c62828;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .success-message {
+            color: #2e7d32;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        /* Einkommen Input */
+        .income-input-wrapper {
+            max-width: 450px;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .income-input-wrapper .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #50685b;
+            pointer-events: none;
+        }
+
+        .income-input-wrapper input {
+            width: 100%;
+            font-size: 1.5em;
+            font-weight: 600;
+            padding: 20px 20px 20px 60px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .income-input-wrapper input:hover {
+            border-color: #50685b;
+            background: #f9f9f9;
+        }
+
+        .income-input-wrapper input:focus {
+            outline: none;
+            border-color: #50685b;
+            box-shadow: 0 0 0 3px rgba(80, 104, 91, 0.15);
+        }
+
+        .income-limit-info {
+            text-align: center;
+            margin-top: 15px;
+            color: #2e7d32;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        /* Karten-Auswahl */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .option-card {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .option-card:hover {
+            background: #e8f0ed;
+            border-color: #50685b;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(80, 104, 91, 0.2);
+        }
+
+        .option-card.selected {
+            background: #50685b;
+            border-color: #50685b;
+            color: white;
+            box-shadow: 0 5px 20px rgba(80, 104, 91, 0.4);
+        }
+
+        .option-card .card-icon {
+            font-size: 3em;
+            margin-bottom: 12px;
+        }
+
+        .option-card.selected .card-icon {
+            filter: brightness(0) invert(1);
+        }
+
+        .option-card .card-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.3;
+            margin-bottom: 5px;
+        }
+
+        .option-card.selected .card-label {
+            color: white;
+        }
+
+        .option-card .card-sublabel {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .option-card.selected .card-sublabel {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .option-card .card-description {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .option-card.selected .card-description {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Erklärung Toggle */
+        .explanation-toggle {
+            margin-top: 25px;
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .explanation-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #e3f2fd;
+            transition: background 0.3s ease;
+        }
+
+        .explanation-header:hover {
+            background: #bbdefb;
+        }
+
+        .explanation-title {
+            color: #1565c0;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .explanation-arrow {
+            color: #1565c0;
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .explanation-header.active .explanation-arrow {
+            transform: rotate(180deg);
+        }
+
+        .explanation-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 20px;
+        }
+
+        .explanation-content.show {
+            max-height: 800px;
+            padding: 20px;
+        }
+
+        .explanation-content p {
+            color: #1565c0;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .explanation-content strong {
+            color: #0d47a1;
+        }
+
+        /* Navigation Buttons */
+        .step-navigation {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-navigate {
+            padding: 14px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-previous {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-previous:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .btn-next {
+            background: #50685b;
+            color: white;
+        }
+
+        .btn-next:hover {
+            background: #42574c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(80, 104, 91, 0.4);
+        }
+
+        .btn-next:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Ergebnis */
+        .result-section {
+            margin-top: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .result-section.hidden {
+            display: none;
+        }
+
+        .ergebnis-summary-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 6px solid #4caf50;
+            border-radius: 12px;
+            padding: 35px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            text-align: center;
+        }
+
+        .result-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .ergebnis-summary-box h2 {
+            color: #1b5e20;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .ergebnis-summary-box .big-amount {
+            font-size: 3em;
+            font-weight: 700;
+            color: #1b5e20;
+            margin: 20px 0;
+        }
+
+        .ergebnis-summary-box p {
+            color: #2e7d32;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .result-card {
+            background: #f0f5f2;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 4px solid #50685b;
+        }
+
+        .result-card h3 {
+            color: #50685b;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #555;
+            font-size: 1em;
+        }
+
+        .result-value {
+            color: #50685b;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .info-box p {
+            color: #1565c0;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .conditions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .conditions-table thead {
+            background: #50685b;
+            color: white;
+        }
+
+        .conditions-table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .conditions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .conditions-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .conditions-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .conditions-intro {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .error-result-box {
+            background: #ffebee;
+            border-left: 6px solid #c62828;
+            border-radius: 12px;
+            padding: 35px;
+            text-align: center;
+        }
+
+        .error-result-box h2 {
+            color: #c62828;
+            font-size: 1.6em;
+            margin-bottom: 20px;
+        }
+
+        .error-result-box ul {
+            text-align: left;
+            max-width: 500px;
+            margin: 20px auto;
+            list-style: none;
+            padding: 0;
+        }
+
+        .error-result-box li {
+            color: #d32f2f;
+            padding: 10px 0;
+            border-bottom: 1px solid #ffcdd2;
+        }
+
+        .error-result-box li:before {
+            content: "❌ ";
+            margin-right: 8px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .subtitle {
+                font-size: 0.9em;
+            }
+
+            .calculator-card {
+                padding: 20px;
+            }
+
+            .section-question {
+                font-size: 1.1em;
+            }
+
+            .progress-indicator {
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding: 10px 5px;
+            }
+
+            .progress-step {
+                min-width: 60px;
+            }
+
+            .progress-dot {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9em;
+            }
+
+            .progress-label {
+                font-size: 0.65em;
+            }
+
+            .progress-line {
+                max-width: 30px;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .slider-value {
+                font-size: 2em;
+            }
+
+            .step-navigation {
+                flex-direction: column;
+            }
+
+            .btn-navigate {
+                width: 100%;
+            }
+
+            .ergebnis-summary-box .big-amount {
+                font-size: 2em;
+            }
+
+            .conditions-table {
+                font-size: 0.75em;
+            }
+
+            .conditions-table th,
+            .conditions-table td {
+                padding: 8px 6px;
+                display: block;
+                text-align: left;
+            }
+
+            .conditions-table thead {
+                display: none;
+            }
+
+            .conditions-table tr {
+                border-bottom: 2px solid #e0e0e0;
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .conditions-table td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                display: block;
+                color: #50685b;
+                margin-bottom: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Calculator Card -->
+        <div class="calculator-card">
+            <!-- Progress Indicator -->
+            <div class="progress-indicator">
+                <div class="progress-step active" data-step="1">
+                    <div class="progress-dot">1</div>
+                    <span class="progress-label">Kinder</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="2">
+                    <div class="progress-dot">2</div>
+                    <span class="progress-label">Einkommen</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="3">
+                    <div class="progress-dot">3</div>
+                    <span class="progress-label">Eigentum</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="4">
+                    <div class="progress-dot">4</div>
+                    <span class="progress-label">Standard</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="5">
+                    <div class="progress-dot">5</div>
+                    <span class="progress-label">Ergebnis</span>
+                </div>
+            </div>
+
+            <form id="kfwForm">
+                <!-- Schritt 1: Kinder -->
+                <div class="form-step active" data-step="1">
+                    <span class="section-question">
+                        Wie viele Kinder (unter 18 Jahren) leben in Ihrem Haushalt?
+                    </span>
+                    
+                    <div class="slider-container">
+                        <div class="slider-wrapper">
+                            <input type="range" id="childrenSlider" class="slider" min="0" max="6" value="1">
+                            <div class="slider-value" id="childrenValue">1</div>
+                        </div>
+                        <div id="childrenError" class="error-message" style="display: none;">
+                            ⚠️ Mindestens 1 Kind erforderlich für die Förderung
+                        </div>
+                    </div>
+
+                    <div class="step-navigation">
+                        <button type="button" class="btn-navigate btn-next" onclick="nextStep(1)">Weiter</button>
+                    </div>
+                </div>
+
+                <!-- Schritt 2: Einkommen -->
+                <div class="form-step" data-step="2">
+                    <span class="section-question">
+                        Durchschnittliches zu versteuerndes Einkommen (zvE)
+                    </span>
+                    <p class="section-hint">
+                        Berechnen Sie den Durchschnitt Ihres zvE der letzten beiden verfügbaren Jahre
+                    </p>
+
+                    <div class="income-input-wrapper">
+                        <span class="input-icon">€</span>
+                        <input type="text" id="incomeInput" placeholder="z.B. 65.000" inputmode="numeric">
+                    </div>
+                    
+                    <div id="incomeLimit" class="income-limit-info"></div>
+                    <div id="incomeError" class="error-message" style="display: none;"></div>
+
+                    <div class="step-navigation">
+                        <button type="button" class="btn-navigate btn-previous" onclick="previousStep(2)">Zurück</button>
+                        <button type="button" class="btn-navigate btn-next" onclick="nextStep(2)">Weiter</button>
+                    </div>
+                </div>
+
+                <!-- Schritt 3: Immobilieneigentum -->
+                <div class="form-step" data-step="3">
+                    <span class="section-question">
+                        Besitzen Sie bereits Wohneigentum?
+                    </span>
+
+                    <div class="card-grid">
+                        <div class="option-card" data-value="no" onclick="selectProperty('no')">
+                            <div class="card-icon">✅</div>
+                            <div class="card-label">Nein</div>
+                        </div>
+                        <div class="option-card" data-value="yes" onclick="selectProperty('yes')">
+                            <div class="card-icon">🏠</div>
+                            <div class="card-label">Ja</div>
+                        </div>
+                    </div>
+
+                    <div id="propertyError" class="error-message" style="display: none;">
+                        ⚠️ Bei bestehendem Wohneigentum ist keine Förderung möglich
+                    </div>
+
+                    <div class="step-navigation">
+                        <button type="button" class="btn-navigate btn-previous" onclick="previousStep(3)">Zurück</button>
+                        <button type="button" class="btn-navigate btn-next" id="propertyNextBtn" onclick="nextStep(3)" disabled>Weiter</button>
+                    </div>
+                </div>
+
+                <!-- Schritt 4: Gebäudestandard -->
+                <div class="form-step" data-step="4">
+                    <span class="section-question">
+                        Erfüllt Ihr Neubau den KfW-Standard?
+                    </span>
+                    <p class="section-hint">
+                        ⚠️ <strong>Wichtig:</strong> Der "Klimafreundliche Neubau"-Standard ist Pflicht für die Förderung. Optional können Sie noch das QNG-Siegel anstreben.
+                    </p>
+
+                    <div class="card-grid">
+                        <div class="option-card" data-value="kfn" onclick="selectStandard('kfn')">
+                            <div class="card-icon">🌱</div>
+                            <div class="card-label">Ja, KFN-Standard</div>
+                            <div class="card-sublabel">✓ Basis-Voraussetzung</div>
+                            <div class="card-description">EH40-Effizienzhaus mit Nachhaltigkeitskriterien</div>
+                        </div>
+                        <div class="option-card" data-value="qng" onclick="selectStandard('qng')">
+                            <div class="card-icon">⭐</div>
+                            <div class="card-label">Ja + QNG-Siegel</div>
+                            <div class="card-sublabel">★ Optional für mehr Förderung</div>
+                            <div class="card-description">Zusätzliches Qualitätssiegel Nachhaltiges Gebäude</div>
+                        </div>
+                    </div>
+
+                    <!-- Erklärung Toggle -->
+                    <div class="explanation-toggle">
+                        <div class="explanation-header" onclick="toggleExplanation()">
+                            <span class="explanation-title">📚 Was bedeutet das konkret für mich?</span>
+                            <span class="explanation-arrow">▼</span>
+                        </div>
+                        <div class="explanation-content">
+                            <p><strong>• KFN-Standard ist Pflicht:</strong></p>
+                            <p>Ohne den "Klimafreundlichen Neubau"-Standard (EH40-Effizienzhaus) gibt es keine KfW-300-Förderung. Alle modernen Neubauten 2026 müssen diesen Standard ohnehin erfüllen – Ihr Architekt/Bauträger plant das automatisch ein.</p>
+                            
+                            <p><strong>• QNG ist ein freiwilliges Upgrade:</strong></p>
+                            <p>Das "Qualitätssiegel Nachhaltiges Gebäude" ist eine zusätzliche Zertifizierung, die strengere Nachhaltigkeitskriterien verlangt. Kostet ca. 3-5% mehr, bringt aber 50.000€ mehr Kredit.</p>
+                            
+                            <p><strong>• Faustregel für diesen Rechner:</strong></p>
+                            <p>Im Zweifel wählen Sie "Ja, KFN-Standard" ohne QNG. Das trifft auf 80-90% aller Familien zu und ist völlig ausreichend für eine satte Förderung.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-navigation">
+                        <button type="button" class="btn-navigate btn-previous" onclick="previousStep(4)">Zurück</button>
+                        <button type="button" class="btn-navigate btn-next" id="standardNextBtn" onclick="calculateResult()" disabled>Ergebnis berechnen</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Ergebnis -->
+            <div id="resultSection" class="result-section hidden"></div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="warning-box" style="margin-top: 25px;">
+            <p>
+                <strong>ℹ️ Rechtlicher Hinweis:</strong> Diese Berechnung dient nur zur Orientierung und stellt keine 
+                offizielle Zusage der KfW dar. Die tatsächliche Förderfähigkeit wird durch die KfW im Antragsverfahren 
+                geprüft. Stand: Februar 2026.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // GitHub Raw URL für die JSON-Datei
+        const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/EABGmbH/kfw300/main/zinsen-kfw300.json';
+        
+        // Zinsdaten global speichern
+        let zinsdaten = null;
+
+        // Lade Zinssätze beim Start
+        async function loadZinssaetze() {
+            try {
+                const response = await fetch(GITHUB_JSON_URL);
+                if (!response.ok) throw new Error('JSON konnte nicht geladen werden');
+                
+                zinsdaten = await response.json();
+                console.log('✅ Zinssätze geladen:', zinsdaten);
+            } catch (error) {
+                console.error('❌ Fehler beim Laden der Zinssätze:', error);
+                // Fallback: Zeige "Tagesaktuell auf kfw.de" wenn Laden fehlschlägt
+                zinsdaten = null;
+            }
+        }
+
+        // Form Data
+        let formData = {
+            children: 1,
+            income: 0,
+            hasProperty: '',
+            buildingStandard: ''
+        };
+
+        let currentStep = 1;
+
+        // Children Slider
+        const childrenSlider = document.getElementById('childrenSlider');
+        const childrenValue = document.getElementById('childrenValue');
+        const childrenError = document.getElementById('childrenError');
+
+        childrenSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            formData.children = value;
+            childrenValue.textContent = value;
+            
+            if (value === 0) {
+                childrenError.style.display = 'block';
+            } else {
+                childrenError.style.display = 'none';
+            }
+            
+            updateIncomeLimit();
+        });
+
+        // Income Input
+        const incomeInput = document.getElementById('incomeInput');
+        const incomeLimit = document.getElementById('incomeLimit');
+        const incomeError = document.getElementById('incomeError');
+
+        incomeInput.addEventListener('input', (e) => {
+            // Remove all non-digit characters
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Update form data
+            formData.income = parseFloat(value) || 0;
+            
+            // Format with thousands separator
+            if (value) {
+                e.target.value = parseInt(value).toLocaleString('de-DE');
+            }
+            
+            validateIncome();
+        });
+
+        function updateIncomeLimit() {
+            const limit = calculateIncomeLimit(formData.children);
+            if (formData.children > 0) {
+                incomeLimit.textContent = `✓ Einkommensgrenze für ${formData.children} ${formData.children === 1 ? 'Kind' : 'Kinder'}: ${limit.toLocaleString('de-DE')} €`;
+                incomeLimit.style.display = 'block';
+            } else {
+                incomeLimit.style.display = 'none';
+            }
+            validateIncome();
+        }
+
+        function calculateIncomeLimit(children) {
+            if (children === 0) return 0;
+            return 90000 + (children - 1) * 10000;
+        }
+
+        function validateIncome() {
+            if (formData.children === 0 || formData.income === 0) {
+                incomeError.style.display = 'none';
+                return true;
+            }
+            
+            const limit = calculateIncomeLimit(formData.children);
+            if (formData.income > limit) {
+                incomeError.textContent = `⚠️ Ihr Einkommen überschreitet die Fördergrenze von ${limit.toLocaleString('de-DE')} €`;
+                incomeError.style.display = 'block';
+                return false;
+            } else {
+                incomeError.style.display = 'none';
+                return true;
+            }
+        }
+
+        // Property Selection
+        function selectProperty(value) {
+            formData.hasProperty = value;
+            
+            const cards = document.querySelectorAll('[data-step="3"] .option-card');
+            cards.forEach(card => {
+                if (card.dataset.value === value) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+
+            const propertyError = document.getElementById('propertyError');
+            const nextBtn = document.getElementById('propertyNextBtn');
+            
+            if (value === 'yes') {
+                propertyError.style.display = 'block';
+                nextBtn.disabled = true;
+            } else {
+                propertyError.style.display = 'none';
+                nextBtn.disabled = false;
+            }
+        }
+
+        // Standard Selection
+        function selectStandard(value) {
+            formData.buildingStandard = value;
+            
+            const cards = document.querySelectorAll('[data-step="4"] .option-card');
+            cards.forEach(card => {
+                if (card.dataset.value === value) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+
+            document.getElementById('standardNextBtn').disabled = false;
+        }
+
+        // Toggle Explanation
+        function toggleExplanation() {
+            const header = document.querySelector('.explanation-header');
+            const content = document.querySelector('.explanation-content');
+            
+            header.classList.toggle('active');
+            content.classList.toggle('show');
+        }
+
+        // Navigation
+        function nextStep(step) {
+            // Validation
+            if (step === 1 && formData.children === 0) {
+                childrenError.style.display = 'block';
+                return;
+            }
+
+            if (step === 2) {
+                if (formData.income === 0) {
+                    alert('Bitte geben Sie Ihr Einkommen an.');
+                    return;
+                }
+                if (!validateIncome()) {
+                    return;
+                }
+            }
+
+            // Move to next step
+            currentStep = step + 1;
+            updateStepDisplay();
+        }
+
+        function previousStep(step) {
+            currentStep = step - 1;
+            updateStepDisplay();
+        }
+
+        function updateStepDisplay() {
+            // Update form steps
+            const steps = document.querySelectorAll('.form-step');
+            steps.forEach(step => {
+                if (parseInt(step.dataset.step) === currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+
+            // Update progress indicator
+            const progressSteps = document.querySelectorAll('.progress-step');
+            progressSteps.forEach(step => {
+                const stepNum = parseInt(step.dataset.step);
+                if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (stepNum === currentStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Calculate Result
+        function calculateResult() {
+            const resultSection = document.getElementById('resultSection');
+            
+            // Final validation
+            if (formData.children === 0) {
+                showError(['Sie benötigen mindestens 1 Kind für die Förderung.']);
+                return;
+            }
+
+            if (formData.income === 0) {
+                showError(['Bitte geben Sie Ihr Einkommen an.']);
+                return;
+            }
+
+            const limit = calculateIncomeLimit(formData.children);
+            if (formData.income > limit) {
+                showError([`Ihr Einkommen überschreitet die Fördergrenze von ${limit.toLocaleString('de-DE')} €.`]);
+                return;
+            }
+
+            if (formData.hasProperty === 'yes') {
+                showError(['Bei bestehendem Wohneigentum ist leider keine Förderung möglich.']);
+                return;
+            }
+
+            if (formData.buildingStandard === '') {
+                showError(['Bitte bestätigen Sie, dass Ihr Neubau den KfW-Standard erfüllt.']);
+                return;
+            }
+
+            // Calculate loan amount
+            const hasQNG = formData.buildingStandard === 'qng';
+            const loanAmount = calculateLoanAmount(formData.children, hasQNG);
+
+            // Show success result
+            showSuccess(loanAmount, hasQNG);
+
+            // Update progress to final step
+            currentStep = 5;
+            updateStepDisplay();
+        }
+
+        function calculateLoanAmount(children, hasQNG) {
+            if (hasQNG) {
+                if (children <= 2) return 220000;
+                if (children <= 4) return 250000;
+                return 270000;
+            } else {
+                if (children <= 2) return 170000;
+                if (children <= 4) return 200000;
+                return 220000;
+            }
+        }
+
+        function showSuccess(amount, hasQNG) {
+            const resultSection = document.getElementById('resultSection');
+            
+            // Zinssätze formatieren
+            let zins1, zins2, zins3;
+            let updateInfo = '';
+            
+            if (zinsdaten && zinsdaten.rates && !zinsdaten.error) {
+                // Verwende geladene Zinssätze
+                const rate1 = zinsdaten.rates['4-10_jahre'];
+                const rate2 = zinsdaten.rates['11-25_jahre'];
+                const rate3 = zinsdaten.rates['26-35_jahre'];
+                
+                zins1 = rate1.effektivzins ? `${rate1.sollzins.toFixed(2).replace('.', ',')} % (${rate1.effektivzins.toFixed(2).replace('.', ',')} %)` : `${rate1.sollzins.toFixed(2).replace('.', ',')} %`;
+                zins2 = rate2.effektivzins ? `${rate2.sollzins.toFixed(2).replace('.', ',')} % (${rate2.effektivzins.toFixed(2).replace('.', ',')} %)` : `${rate2.sollzins.toFixed(2).replace('.', ',')} %`;
+                zins3 = rate3.effektivzins ? `${rate3.sollzins.toFixed(2).replace('.', ',')} % (${rate3.effektivzins.toFixed(2).replace('.', ',')} %)` : `${rate3.sollzins.toFixed(2).replace('.', ',')} %`;
+                
+                updateInfo = `<p style="text-align: center; color: #666; font-size: 0.85em; margin-top: 10px;">Stand: ${new Date(zinsdaten.updated).toLocaleDateString('de-DE')}</p>`;
+            } else {
+                // Fallback wenn keine Daten verfügbar
+                zins1 = '<strong>Tagesaktuell auf kfw.de</strong>';
+                zins2 = '<strong>Tagesaktuell auf kfw.de</strong>';
+                zins3 = '<strong>Tagesaktuell auf kfw.de</strong>';
+            }
+            
+            resultSection.innerHTML = `
+                <div class="ergebnis-summary-box">
+                    <div class="result-icon">🎉</div>
+                    <h2>Herzlichen Glückwunsch!</h2>
+                    <p>Sie haben voraussichtlich Anspruch auf einen KfW-300 Kredit in Höhe von:</p>
+                    <div class="big-amount">${amount.toLocaleString('de-DE')} €</div>
+                </div>
+
+                <div class="result-card">
+                    <h3>📋 Ihre Angaben im Überblick</h3>
+                    <div class="result-item">
+                        <span class="result-label">👶 Anzahl Kinder</span>
+                        <span class="result-value">${formData.children}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">💰 Einkommen (zvE)</span>
+                        <span class="result-value">${formData.income.toLocaleString('de-DE')} €</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">🏡 Bestehendes Wohneigentum</span>
+                        <span class="result-value">Nein</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">🌱 Gebäudestandard</span>
+                        <span class="result-value">${hasQNG ? 'KFN-Standard + QNG-Siegel' : 'KFN-Standard (Basis)'}</span>
+                    </div>
+                </div>
+
+                <div class="result-card" style="margin-top: 20px;">
+                    <h3>📊 Kreditkonditionen - Annuitätendarlehen</h3>
+                    <p class="conditions-intro">
+                        Beim Annuitätendarlehen zahlen Sie in den ersten Jahren (tilgungsfreie Anlaufzeit) nur Zinsen - 
+                        danach gleich hohe monatliche Annuitäten.
+                    </p>
+                    
+                    <table class="conditions-table">
+                        <thead>
+                            <tr>
+                                <th>Laufzeit</th>
+                                <th>Zinsbindung</th>
+                                <th>Tilgungsfreie Anlaufzeit</th>
+                                <th>Sollzins pro Jahr (effektiver Jahreszins)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="Laufzeit">4 bis 10 Jahre</td>
+                                <td data-label="Zinsbindung">10 Jahre</td>
+                                <td data-label="Tilgungsfreie Anlaufzeit">1 bis 2 Jahre</td>
+                                <td data-label="Sollzins pro Jahr">${zins1}</td>
+                            </tr>
+                            <tr>
+                                <td data-label="Laufzeit">11 bis 25 Jahre</td>
+                                <td data-label="Zinsbindung">10 Jahre</td>
+                                <td data-label="Tilgungsfreie Anlaufzeit">1 bis 3 Jahre</td>
+                                <td data-label="Sollzins pro Jahr">${zins2}</td>
+                            </tr>
+                            <tr>
+                                <td data-label="Laufzeit">26 bis 35 Jahre</td>
+                                <td data-label="Zinsbindung">10 Jahre</td>
+                                <td data-label="Tilgungsfreie Anlaufzeit">1 bis 5 Jahre</td>
+                                <td data-label="Sollzins pro Jahr">${zins3}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    ${updateInfo}
+                </div>
+            `;
+
+            resultSection.classList.remove('hidden');
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(messages) {
+            const resultSection = document.getElementById('resultSection');
+            
+            const messageList = messages.map(msg => `<li>${msg}</li>`).join('');
+            
+            resultSection.innerHTML = `
+                <div class="error-result-box">
+                    <div class="result-icon">😔</div>
+                    <h2>Leider passen die Kriterien aktuell nicht</h2>
+                    <ul>
+                        ${messageList}
+                    </ul>
+                </div>
+            `;
+
+            resultSection.classList.remove('hidden');
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+
+            // Update progress to final step
+            currentStep = 5;
+            updateStepDisplay();
+        }
+
+        // Initialize
+        updateIncomeLimit();
+        loadZinssaetze(); // Lade Zinssätze beim Start
+    </script>
+</body>
+</html>
