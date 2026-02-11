@@ -1,0 +1,16 @@
+{
+  "name": "kfw300-scraper",
+  "version": "1.0.0",
+  "description": "KfW 300 Zinssätze Scraper mit Playwright",
+  "main": "scrape-kfw-playwright.js",
+  "scripts": {
+    "scrape": "node scrape-kfw-playwright.js",
+    "test": "node scrape-kfw-playwright.js"
+  },
+  "keywords": ["kfw", "zinsen", "scraper", "playwright"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}

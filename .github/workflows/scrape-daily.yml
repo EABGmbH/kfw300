@@ -1,0 +1,37 @@
+name: Scrape KfW 300 Zinssätze täglich (Playwright)
+
+on:
+  schedule:
+    # Läuft täglich um 2:00 Uhr morgens (UTC) = 3:00 Uhr MEZ
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Erlaubt manuelles Triggern
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Install Dependencies
+      run: |
+        npm install
+        npx playwright install --with-deps chromium
+        
+    - name: Run Playwright Scraper
+      run: |
+        node scrape-kfw-playwright.js
+        
+    - name: Commit and Push Changes
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add zinsen-kfw300.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Auto-Update: KfW 300 Zinssätze $(date +'%Y-%m-%d %H:%M')" && git push)
