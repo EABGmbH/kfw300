@@ -1,40 +1,29 @@
 {
-  "updated": "2026-02-10 08:00:00",
-  "kfw": {
-    "program": "KfW 300 - Wohneigentum für Familien",
-    "rates": {
-      "4-10_jahre": {
-        "laufzeit": "4 bis 10 Jahre",
-        "zinsbindung": "10 Jahre",
-        "tilgungsfrei": "1 bis 2 Jahre",
-        "sollzins": 0.01,
-        "effektivzins": 0.01
-      },
-      "11-25_jahre": {
-        "laufzeit": "11 bis 25 Jahre",
-        "zinsbindung": "10 Jahre",
-        "tilgungsfrei": "1 bis 3 Jahre",
-        "sollzins": 1.09,
-        "effektivzins": 1.10
-      },
-      "26-35_jahre": {
-        "laufzeit": "26 bis 35 Jahre",
-        "zinsbindung": "10 Jahre",
-        "tilgungsfrei": "1 bis 5 Jahre",
-        "sollzins": 1.32,
-        "effektivzins": 1.33
-      }
+  "updated": "2026-02-12 06:21:02",
+  "program": "KfW 300 - Wohneigentum für Familien",
+  "rates": {
+    "4-10_jahre": {
+      "laufzeit": "4 bis 10 Jahre",
+      "zinsbindung": "10 Jahre",
+      "tilgungsfrei": "1 bis 2 Jahre",
+      "sollzins": 0.01,
+      "effektivzins": 0.01
     },
-    "source_url": "https://www.kfw.de/inlandsfoerderung/Privatpersonen/Neubau/F%C3%B6rderprodukte/Wohneigentum-f%C3%BCr-Familien-(300)/"
+    "11-25_jahre": {
+      "laufzeit": "11 bis 25 Jahre",
+      "zinsbindung": "10 Jahre",
+      "tilgungsfrei": "1 bis 3 Jahre",
+      "sollzins": 1.09,
+      "effektivzins": 1.1
+    },
+    "26-35_jahre": {
+      "laufzeit": "26 bis 35 Jahre",
+      "zinsbindung": "10 Jahre",
+      "tilgungsfrei": "1 bis 5 Jahre",
+      "sollzins": 1.32,
+      "effektivzins": 1.33
+    }
   },
-  "interhyp": {
-    "rates": {
-      "zinsbindung_10": {
-        "zinsbindung": "10 Jahre",
-        "beleihung": "< 90%",
-        "zins": 3.96
-      }
-    },
-    "source_url": "https://www.interhyp.de/zinsen/"
-  }
+  "source_url": "https://www.kfw.de/inlandsfoerderung/Privatpersonen/Neubau/F%C3%B6rderprodukte/Wohneigentum-f%C3%BCr-Familien-(300)/",
+  "manual_update_required": true
 }
