@@ -630,7 +630,7 @@
 
         .conditions-table th {
             padding: 12px;
-            text-align: left;
+            text-align: center;
             font-size: 0.9em;
             font-weight: 600;
         }
@@ -640,6 +640,7 @@
             border-bottom: 1px solid #e0e0e0;
             color: #333;
             font-size: 0.9em;
+            text-align: center;
         }
 
         .conditions-table tbody tr:last-child td {
@@ -794,8 +795,21 @@
                 color: #50685b;
                 margin-bottom: 4px;
             }
+
+            /* Vergleichskasten responsive */
+            .result-card div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* CTA Boxen responsive */
+            div[style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
+    
+    <!-- jsPDF Library für PDF-Generierung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -838,7 +852,7 @@
                     
                     <div class="slider-container">
                         <div class="slider-wrapper">
-                            <input type="range" id="childrenSlider" class="slider" min="0" max="6" value="1">
+                            <input type="range" id="childrenSlider" class="slider" min="0" max="10" value="1">
                             <div class="slider-value" id="childrenValue">1</div>
                         </div>
                         <div id="childrenError" class="error-message" style="display: none;">
@@ -857,7 +871,7 @@
                         Durchschnittliches zu versteuerndes Einkommen (zvE)
                     </span>
                     <p class="section-hint">
-                        Berechnen Sie den Durchschnitt Ihres zvE der letzten beiden verfügbaren Jahre
+                        Berechnen Sie den Durchschnitt Ihres zvE aus dem Jahr 2023 und 2024.
                     </p>
 
                     <div class="income-input-wrapper">
@@ -933,7 +947,7 @@
                         </div>
                         <div class="explanation-content">
                             <p><strong>• KFN-Standard ist Pflicht:</strong></p>
-                            <p>Ohne den "Klimafreundlichen Neubau"-Standard (EH40-Effizienzhaus) gibt es keine KfW-300-Förderung. Alle modernen Neubauten 2026 müssen diesen Standard ohnehin erfüllen – Ihr Architekt/Bauträger plant das automatisch ein.</p>
+                            <p>Ohne den "Klimafreundlichen Neubau"-Standard (EH40-Effizienzhaus) gibt es keine KfW-300-Förderung.</p>
                             
                             <p><strong>• QNG ist ein freiwilliges Upgrade:</strong></p>
                             <p>Das "Qualitätssiegel Nachhaltiges Gebäude" ist eine zusätzliche Zertifizierung, die strengere Nachhaltigkeitskriterien verlangt. Kostet ca. 3-5% mehr, bringt aber 50.000€ mehr Kredit.</p>
@@ -965,16 +979,22 @@
     </div>
 
     <script>
-        // GitHub Raw URL für die JSON-Datei
+        // JSON URLs - für lokale Tests wird die lokale Datei verwendet
         const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/EABGmbH/kfw300/main/zinsen-kfw300.json';
+        const LOCAL_JSON_URL = './zinsen-kfw300.json';
+        
+        // Für lokale Tests: setze auf true, für Produktion: false
+        const USE_LOCAL_JSON = false;
         
         // Zinsdaten global speichern
         let zinsdaten = null;
 
         // Lade Zinssätze beim Start
         async function loadZinssaetze() {
+            const jsonUrl = USE_LOCAL_JSON ? LOCAL_JSON_URL : GITHUB_JSON_URL;
+            
             try {
-                const response = await fetch(GITHUB_JSON_URL);
+                const response = await fetch(jsonUrl);
                 if (!response.ok) throw new Error('JSON konnte nicht geladen werden');
                 
                 zinsdaten = await response.json();
@@ -1237,16 +1257,26 @@
             // Zinssätze formatieren
             let zins1, zins2, zins3;
             let updateInfo = '';
+            let interhypZins = null;
+            let kfwAvgZins = null;
             
-            if (zinsdaten && zinsdaten.rates && !zinsdaten.error) {
-                // Verwende geladene Zinssätze
-                const rate1 = zinsdaten.rates['4-10_jahre'];
-                const rate2 = zinsdaten.rates['11-25_jahre'];
-                const rate3 = zinsdaten.rates['26-35_jahre'];
+            if (zinsdaten && zinsdaten.kfw && zinsdaten.kfw.rates && !zinsdaten.error) {
+                // Verwende geladene KfW-Zinssätze
+                const rate1 = zinsdaten.kfw.rates['4-10_jahre'];
+                const rate2 = zinsdaten.kfw.rates['11-25_jahre'];
+                const rate3 = zinsdaten.kfw.rates['26-35_jahre'];
                 
                 zins1 = rate1.effektivzins ? `${rate1.sollzins.toFixed(2).replace('.', ',')} % (${rate1.effektivzins.toFixed(2).replace('.', ',')} %)` : `${rate1.sollzins.toFixed(2).replace('.', ',')} %`;
                 zins2 = rate2.effektivzins ? `${rate2.sollzins.toFixed(2).replace('.', ',')} % (${rate2.effektivzins.toFixed(2).replace('.', ',')} %)` : `${rate2.sollzins.toFixed(2).replace('.', ',')} %`;
                 zins3 = rate3.effektivzins ? `${rate3.sollzins.toFixed(2).replace('.', ',')} % (${rate3.effektivzins.toFixed(2).replace('.', ',')} %)` : `${rate3.sollzins.toFixed(2).replace('.', ',')} %`;
+                
+                // Berechne durchschnittlichen KfW-Zins für Vergleich (10 Jahre Zinsbindung = rate1)
+                kfwAvgZins = rate1.sollzins;
+                
+                // Lade Interhyp-Daten
+                if (zinsdaten.interhyp && zinsdaten.interhyp.rates && zinsdaten.interhyp.rates.zinsbindung_10) {
+                    interhypZins = zinsdaten.interhyp.rates.zinsbindung_10.zins;
+                }
                 
                 updateInfo = `<p style="text-align: center; color: #666; font-size: 0.85em; margin-top: 10px;">Stand: ${new Date(zinsdaten.updated).toLocaleDateString('de-DE')}</p>`;
             } else {
@@ -1323,10 +1353,405 @@
                     </table>
                     ${updateInfo}
                 </div>
+
+                ${interhypZins && kfwAvgZins ? `
+                <div class="result-card" style="margin-top: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #50685b;">
+                    <h3>💰 Zinsvergleich: KfW 300 vs. klassische Baufinanzierung</h3>
+                    <p style="color: #666; font-size: 0.95em; margin-bottom: 15px;">
+                        Vergleich mit marktüblichen Zinssätzen (4-10 Jahre Laufzeit, 10 Jahre Zinsbindung, Beleihung < 90%)
+                    </p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                        <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 0.9em; color: #666; font-weight: 600; margin-bottom: 8px;">🏛️ KfW 300</div>
+                            <div style="font-size: 2em; font-weight: 700; color: #50685b;">${kfwAvgZins.toFixed(2).replace('.', ',')} %</div>
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">Sollzins p.a.</div>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 0.9em; color: #666; font-weight: 600; margin-bottom: 8px;">🏦 Interhyp (Markt)</div>
+                            <div style="font-size: 2em; font-weight: 700; color: #dc3545;">${interhypZins.toFixed(2).replace('.', ',')} %</div>
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">Durchschnitt</div>
+                        </div>
+                    </div>
+                    
+                    ${kfwAvgZins < interhypZins ? `
+                    <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin-top: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.8em;">✅</span>
+                            <div>
+                                <strong style="color: #155724; font-size: 1.1em;">Ihr Vorteil: ${(interhypZins - kfwAvgZins).toFixed(2).replace('.', ',')} % günstigerer Zins!</strong>
+                                <p style="color: #155724; margin: 5px 0 0 0; font-size: 0.9em;">
+                                    Bei ${amount.toLocaleString('de-DE')} € Darlehenssumme sparen Sie über die Laufzeit mehrere Tausend Euro.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <p style="text-align: center; color: #666; font-size: 0.8em; margin-top: 15px; font-style: italic;">
+                        Quelle Marktdaten: <a href="https://www.interhyp.de/zinsen/" target="_blank" style="color: #50685b;">Interhyp</a> | 
+                        Stand: ${new Date(zinsdaten.updated).toLocaleDateString('de-DE')}
+                    </p>
+                </div>
+                ` : ''}
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+                    <!-- PDF CTA -->
+                    <div style="background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 12px; padding: 25px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">📄</div>
+                        <p style="color: #495057; font-size: 0.95em; line-height: 1.4; margin-bottom: 20px;">
+                            Jetzt kostenloses PDF anfordern – inklusive wichtiger Hinweise zur erfolgreichen Umsetzung
+                        </p>
+                        <button onclick="generatePDF()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s;" onmouseover="this.style.background='#5a6268'" onmouseout="this.style.background='#6c757d'">
+                            Kostenloses PDF erstellen
+                        </button>
+                    </div>
+
+                    <!-- Energieberatung CTA -->
+                    <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border: 2px solid #28a745; border-radius: 12px; padding: 25px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">🔥</div>
+                        <p style="color: #155724; font-size: 0.95em; line-height: 1.4; margin-bottom: 20px; font-weight: 600;">
+                            Jetzt Energieberatung anfragen und direkt 10 % Nachlass sichern.
+                        </p>
+                        <button onclick="window.location.href='https://energy-advice-bavaria.de/kontakt/?tab=offer-tab-pane#section-79'" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s;" onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+                            Unverbindliches Angebot anfordern
+                        </button>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button onclick="location.reload()" class="btn-navigate btn-previous" style="padding: 14px 40px;">
+                        ↻ Neue Berechnung starten
+                    </button>
+                </div>
             `;
 
             resultSection.classList.remove('hidden');
             resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
+            
+            // Hilfsfunktion um Bilder zu laden
+            const loadImage = (src) => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            };
+
+            // Bild für PDF optimieren (Downscaling + optionale Kompression)
+            const optimizeImageForPdf = (img, maxWidthPx, maxHeightPx, mimeType = 'image/jpeg', quality = 0.82) => {
+                const scale = Math.min(maxWidthPx / img.width, maxHeightPx / img.height, 1);
+                const targetWidth = Math.max(1, Math.round(img.width * scale));
+                const targetHeight = Math.max(1, Math.round(img.height * scale));
+
+                const canvas = document.createElement('canvas');
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
+
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+                return canvas.toDataURL(mimeType, quality);
+            };
+            
+            try {
+                // Lade alle benötigten Bilder
+                const titelblatt = await loadImage('./titelblatt300.png');
+                const logo = await loadImage('./logo.png');
+                const qrCode = await loadImage('./homepagestatistik.png');
+                const ablauf = await loadImage('./kfwablauf.png');
+
+                // Für PDF optimierte Bilddaten (reduziert Dateigröße massiv)
+                const titelblattData = optimizeImageForPdf(titelblatt, 1600, 2300, 'image/jpeg', 0.82);
+                const logoData = optimizeImageForPdf(logo, 900, 500, 'image/png');
+                const qrCodeData = optimizeImageForPdf(qrCode, 500, 500, 'image/png');
+                const ablaufData = optimizeImageForPdf(ablauf, 1600, 2300, 'image/jpeg', 0.82);
+                
+                // Berechne Seitenverhältnisse
+                const logoAspect = logo.width / logo.height;
+                const qrAspect = qrCode.width / qrCode.height;
+                const ablaufAspect = ablauf.width / ablauf.height;
+                
+                // Logo: Höhe 10mm, Breite proportional
+                const logoHeight = 10;
+                const logoWidth = logoHeight * logoAspect;
+                
+                // QR-Code: 20mm x 20mm (sollte quadratisch sein)
+                const qrSize = 20;
+                
+                // Ablauf Bild: Maximale Breite 190mm, Höhe proportional
+                const ablaufMaxWidth = 190;
+                const ablaufMaxHeight = 240;
+                let ablaufWidth, ablaufHeight;
+                
+                if (ablaufMaxWidth / ablaufAspect <= ablaufMaxHeight) {
+                    // Breite ist limitierend
+                    ablaufWidth = ablaufMaxWidth;
+                    ablaufHeight = ablaufMaxWidth / ablaufAspect;
+                } else {
+                    // Höhe ist limitierend
+                    ablaufHeight = ablaufMaxHeight;
+                    ablaufWidth = ablaufMaxHeight * ablaufAspect;
+                }
+                
+                const ablaufX = (210 - ablaufWidth) / 2; // Zentriert
+                
+                // Hilfsfunktion für Kopfzeile (grüner Balken)
+                const addHeader = (doc) => {
+                    // Grüner Balken oben (helleres Grün passend zum Titelblatt)
+                    doc.setFillColor(80, 104, 91);
+                    doc.rect(0, 0, 210, 25, 'F');
+                    
+                    // Text links
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('KfW - Familienkredit 300 - Ergebnis', 10, 15.5);
+                    
+                    // Logo rechts (mit korrektem Seitenverhältnis)
+                    const logoX = 210 - logoWidth - 5; // 5mm Abstand vom rechten Rand
+                    doc.addImage(logoData, 'PNG', logoX, 7.5, logoWidth, logoHeight, 'logoImage', 'FAST');
+                };
+                
+                // Hilfsfunktion für Fußzeile (QR-Code)
+                const addFooter = (doc) => {
+                    // QR-Code mittig unten (mit korrektem Seitenverhältnis)
+                    const qrX = (210 - qrSize) / 2; // Zentriert
+                    doc.addImage(qrCodeData, 'PNG', qrX, 272, qrSize, qrSize, 'qrCodeImage', 'FAST');
+                };
+                
+                // === SEITE 1: Titelblatt ===
+                doc.addImage(titelblattData, 'JPEG', 0, 0, 210, 297, 'titelblattImage', 'FAST');
+                
+                // === SEITE 2: Zusammenfassung ===
+                doc.addPage();
+                
+                // Kopfzeile: Grüner Balken mit Logo
+                addHeader(doc);
+                
+                const children = formData.children;
+                const income = formData.income;
+                const hasProperty = formData.hasProperty === 'no' ? 'Nein' : 'Ja';
+                const buildingStandard = formData.buildingStandard === 'with-qng' ? 'KFN-Standard + QNG-Siegel' : 'KFN-Standard (Basis)';
+                const amount = calculateLoanAmount(children, formData.buildingStandard === 'with-qng');
+                
+                // Berechne Zinsen und Ersparnis
+                let kfwZins = 0;
+                let interhypZins = 0;
+                let zinsersparnis = 0;
+                let monatlicheRate = 0;
+                let monatlicheRateMarkt = 0;
+                let monatlicheErsparnis = 0;
+                let gesamtersparnis = 0;
+                
+                if (zinsdaten && zinsdaten.kfw && zinsdaten.interhyp) {
+                    kfwZins = zinsdaten.kfw.rates['4-10_jahre'].sollzins;
+                    interhypZins = zinsdaten.interhyp.rates.zinsbindung_10.zins;
+                    zinsersparnis = interhypZins - kfwZins;
+                    
+                    // Monatliche Raten für 10 Jahre (nur Zinsen, da tilgungsfrei)
+                    monatlicheRate = (amount * kfwZins / 100) / 12;
+                    monatlicheRateMarkt = (amount * interhypZins / 100) / 12;
+                    monatlicheErsparnis = monatlicheRateMarkt - monatlicheRate;
+                    
+                    // Gesamtersparnis über 1 Jahr
+                    gesamtersparnis = monatlicheErsparnis * 12;
+                }
+                
+                let yPos = 35;
+                
+                // Projektdaten
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(0, 0, 0);
+                
+                doc.text('Projektdaten:', 20, yPos);
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                yPos += 6;
+                doc.text(`Anzahl Kinder: ${children}`, 20, yPos);
+                yPos += 5;
+                doc.text(`Einkommen (zvE): ${income.toLocaleString('de-DE')} €`, 20, yPos);
+                yPos += 5;
+                doc.text(`Bestehendes Wohneigentum: ${hasProperty}`, 20, yPos);
+                yPos += 5;
+                doc.text(`Gebäudestandard: ${buildingStandard}`, 20, yPos);
+                yPos += 5;
+                doc.text(`Kredithöhe: ${amount.toLocaleString('de-DE')} EUR`, 20, yPos);
+                
+                // Finanzierungsübersicht Box
+                yPos = 70;
+                doc.setFillColor(245, 245, 245);
+                doc.rect(15, yPos, 180, 92, 'F');
+                doc.setDrawColor(200, 200, 200);
+                doc.rect(15, yPos, 180, 92, 'S');
+                
+                yPos += 8;
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(0, 0, 0);
+                doc.text('Finanzierungsübersicht', 20, yPos);
+                
+                yPos += 10;
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                const valueX = 185;
+                
+                // Kreditbetrag
+                doc.text('Kreditbetrag:', 25, yPos);
+                doc.text(`${amount.toLocaleString('de-DE')} EUR`, valueX, yPos, { align: 'right' });
+                yPos += 6;
+                doc.text('Max. möglicher KfW-Kredit:', 25, yPos);
+                doc.text(`${amount.toLocaleString('de-DE')} EUR`, valueX, yPos, { align: 'right' });
+                
+                yPos += 10;
+                // Zinssätze
+                doc.setFont(undefined, 'bold');
+                doc.text('Zinssätze (10 Jahre Zinsbindung):', 25, yPos);
+                doc.setFont(undefined, 'normal');
+                yPos += 6;
+                
+                // Hinweis für längere Laufzeit
+                doc.setFontSize(8);
+                doc.setTextColor(200, 0, 0);
+                doc.text('Hinweis: Längere Laufzeiten (11-35 Jahre) haben höhere KfW-Zinssätze.', 25, yPos);
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                yPos += 6;
+                
+                doc.text('KfW-Förderkredit EH40:', 25, yPos);
+                doc.setTextColor(80, 104, 91);
+                doc.setFont(undefined, 'bold');
+                doc.text(`${kfwZins.toFixed(2).replace('.', ',')} % p.a.`, valueX, yPos, { align: 'right' });
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(0, 0, 0);
+                yPos += 6;
+                
+                doc.text('Marktüblicher Zins:', 25, yPos);
+                doc.text(`${interhypZins.toFixed(2).replace('.', ',')} % p.a.`, valueX, yPos, { align: 'right' });
+                
+                yPos += 10;
+                // Monatliche Belastung
+                doc.setFont(undefined, 'bold');
+                doc.text('Monatliche Belastung:', 25, yPos);
+                doc.setFont(undefined, 'normal');
+                yPos += 6;
+                doc.text('Mit KfW-Förderung:', 25, yPos);
+                doc.text(`${Math.round(monatlicheRate).toLocaleString('de-DE')} EUR`, valueX, yPos, { align: 'right' });
+                yPos += 6;
+                doc.text('Bei Marktkonditionen:', 25, yPos);
+                doc.text(`${Math.round(monatlicheRateMarkt).toLocaleString('de-DE')} EUR`, valueX, yPos, { align: 'right' });
+                
+                yPos += 8;
+                // Monatliche Ersparnis (grün hervorgehoben)
+                doc.setFillColor(80, 104, 91);
+                doc.rect(20, yPos - 4, 170, 8, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont(undefined, 'bold');
+                const savingsTextY = yPos + 1;
+                doc.text('Monatliche Ersparnis:', 25, savingsTextY);
+                doc.text(`${Math.round(monatlicheErsparnis).toLocaleString('de-DE')} EUR`, valueX, savingsTextY, { align: 'right' });
+                
+                // Großer grüner Kasten: Zinsvorteil
+                yPos = 168;
+                doc.setFillColor(80, 104, 91);
+                doc.rect(15, yPos, 180, 20, 'F');
+                yPos += 8;
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text(`Ihr Zinsvorteil gegenüber Marktkredit (1 Jahr):`, 105, yPos, { align: 'center' });
+                yPos += 7;
+                doc.setFontSize(14);
+                doc.text(`${Math.round(gesamtersparnis).toLocaleString('de-DE')} EUR`, 105, yPos, { align: 'center' });
+
+                // Erklärung zum Vergleich (vertikal zentriert zwischen Vorteilskasten und QR)
+                doc.setFontSize(8);
+                doc.setTextColor(0, 0, 0);
+                const paragraphX = 15;
+                const paragraphWidth = 180;
+                const lineHeight = 3.8;
+                const blockSpacing = 3.5;
+
+                const infoBlocks = [
+                    {
+                        title: 'Über diesen Vergleich:',
+                        text: 'Diese Berechnung verdeutlicht Ihren massiven Zinsvorteil durch das KfW-Programm 300 im Vergleich zu aktuellen Marktkonditionen.'
+                    },
+                    {
+                        title: 'Zinsersparnis:',
+                        text: 'Da der KfW-Zins mit 0,01 % p.a. extrem subventioniert ist, zahlen Sie monatlich fast keine Zinsen.'
+                    },
+                    {
+                        title: 'Monatliche Rate:',
+                        text: 'Der angezeigte Betrag von 1 EUR entspricht der tatsächlichen Belastung während der tilgungsfreien Anlaufjahre (je nach Wahl 1 bis 5 Jahre).'
+                    },
+                    {
+                        title: 'Hinweis zur Tilgung:',
+                        text: 'Nach Ablauf der tilgungsfreien Zeit kommt zur Zinsrate die Tilgung (Rückzahlung des Kredits) hinzu. In einem marktüblichen Darlehen müssten Sie Zinsen und Tilgung von Beginn an parallel leisten.'
+                    }
+                ];
+
+                const preparedBlocks = infoBlocks.map((block) => {
+                    const wrappedLines = doc.splitTextToSize(block.text, paragraphWidth);
+                    const blockHeight = lineHeight + (wrappedLines.length * lineHeight) + blockSpacing;
+                    return { ...block, wrappedLines, blockHeight };
+                });
+
+                const totalInfoHeight = preparedBlocks.reduce((sum, block) => sum + block.blockHeight, 0);
+                const contentTop = 188;
+                const contentBottom = 272;
+                yPos = contentTop + ((contentBottom - contentTop - totalInfoHeight) / 2);
+
+                preparedBlocks.forEach((block) => {
+                    doc.setFont(undefined, 'bold');
+                    doc.text(block.title, paragraphX, yPos);
+                    yPos += lineHeight;
+
+                    doc.setFont(undefined, 'normal');
+                    doc.text(block.wrappedLines, paragraphX, yPos);
+                    yPos += (block.wrappedLines.length * lineHeight) + blockSpacing;
+                });
+                
+                // Reset
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(0, 0, 0);
+                
+                // Fußzeile: QR-Code
+                addFooter(doc);
+                
+                // === SEITE 3: KfW Ablauf ===
+                doc.addPage();
+                
+                // Kopfzeile: Grüner Balken mit Logo
+                addHeader(doc);
+                
+                // KfW Ablauf Bild (mit originalen Proportionen, zentriert)
+                doc.addImage(ablaufData, 'JPEG', ablaufX, 25, ablaufWidth, ablaufHeight, 'ablaufImage', 'FAST');
+
+                // Klickbarer Link auf Seite 3
+                doc.link(57.0, 102.5, 50, 5, {
+                    url: 'https://www.energy-advice-bavaria.de'
+                });
+                
+                // Fußzeile: QR-Code
+                addFooter(doc);
+                
+                // PDF speichern
+                doc.save('KfW-300-Foerderung.pdf');
+                
+            } catch (error) {
+                console.error('Fehler beim PDF-Erstellen:', error);
+                alert('Fehler beim Erstellen der PDF. Bitte versuchen Sie es erneut.');
+            }
         }
 
         function showError(messages) {
@@ -1341,6 +1766,11 @@
                     <ul>
                         ${messageList}
                     </ul>
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button onclick="location.reload()" class="btn-navigate btn-previous" style="padding: 14px 40px;">
+                            ↻ Neue Berechnung starten
+                        </button>
+                    </div>
                 </div>
             `;
 
