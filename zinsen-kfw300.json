@@ -1,5 +1,5 @@
 {
-  "updated": "2026-02-10 08:00:00",
+  "updated": "2026-02-16 10:53:40",
   "kfw": {
     "program": "KfW 300 - Wohneigentum für Familien",
     "rates": {
@@ -15,7 +15,7 @@
         "zinsbindung": "10 Jahre",
         "tilgungsfrei": "1 bis 3 Jahre",
         "sollzins": 1.09,
-        "effektivzins": 1.10
+        "effektivzins": 1.1
       },
       "26-35_jahre": {
         "laufzeit": "26 bis 35 Jahre",
@@ -32,7 +32,7 @@
       "zinsbindung_10": {
         "zinsbindung": "10 Jahre",
         "beleihung": "< 90%",
-        "zins": 3.96
+        "zins": 3.91
       }
     },
     "source_url": "https://www.interhyp.de/zinsen/"
