@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KfW 300 Förderrechner - Wohneigentum für Familien</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card-option:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-option.selected {
+            border: 3px solid #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .slider-thumb::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 2px solid #667eea;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-8 shadow-lg">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-2">🏠 KfW-300 Förderrechner</h1>
+            <p class="text-lg opacity-90">Wohneigentum für Familien - Stand 2026</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+        
+        <!-- Info Banner -->
+        <div class="info-box p-4 rounded-lg mb-8 fade-in">
+            <div class="flex items-start">
+                <span class="text-2xl mr-3">💡</span>
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-1">Wichtiger Hinweis zum Einkommen:</h3>
+                    <p class="text-sm text-gray-700">
+                        Das <strong>zu versteuernde Einkommen (zvE)</strong> findest du auf deinem Steuerbescheid. 
+                        Es ist meist <strong>deutlich niedriger als dein Bruttogehalt</strong>! 
+                        Bitte nicht das Bruttoeinkommen verwenden.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+            <form id="kfwForm">
+                
+                <!-- Schritt 1: Anzahl Kinder -->
+                <div class="mb-8 fade-in">
+                    <label class="block text-lg font-semibold text-gray-800 mb-4">
+                        1. Wie viele Kinder (unter 18 Jahren) leben in Ihrem Haushalt?
+                    </label>
+                    <div class="flex items-center space-x-4">
+                        <input 
+                            type="range" 
+                            id="childrenSlider" 
+                            min="0" 
+                            max="6" 
+                            value="1" 
+                            class="slider-thumb flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        >
+                        <div class="text-3xl font-bold text-purple-600 min-w-[60px] text-center" id="childrenValue">1</div>
+                    </div>
+                    <div id="childrenError" class="mt-2 text-red-600 text-sm hidden">
+                        ⚠️ Mindestens 1 Kind erforderlich für die Förderung
+                    </div>
+                </div>
+
+                <!-- Schritt 2: Einkommen -->
+                <div class="mb-8 fade-in">
+                    <label class="block text-lg font-semibold text-gray-800 mb-2">
+                        2. Durchschnittliches zu versteuerndes Einkommen (zvE) 2023 und 2024
+                    </label>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Berechnen Sie den Durchschnitt Ihres zvE aus beiden Jahren
+                    </p>
+                    <div class="relative">
+                        <input 
+                            type="number" 
+                            id="income" 
+                            min="0" 
+                            max="300000" 
+                            step="1000"
+                            placeholder="z.B. 65000"
+                            class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none transition"
+                        >
+                        <span class="absolute right-4 top-3 text-gray-500 text-lg">€</span>
+                    </div>
+                    <div id="incomeLimit" class="mt-2 text-sm text-gray-600"></div>
+                    <div id="incomeError" class="mt-2 text-red-600 text-sm hidden"></div>
+                </div>
+
+                <!-- Schritt 3: Immobilieneigentum -->
+                <div class="mb-8 fade-in">
+                    <label class="block text-lg font-semibold text-gray-800 mb-4">
+                        3. Besitzen Sie bereits Wohneigentum?
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="card-option bg-white border-2 border-gray-300 rounded-lg p-4 text-center" data-value="no">
+                            <span class="text-4xl block mb-2">✅</span>
+                            <span class="font-semibold">Nein</span>
+                        </div>
+                        <div class="card-option bg-white border-2 border-gray-300 rounded-lg p-4 text-center" data-value="yes">
+                            <span class="text-4xl block mb-2">🏠</span>
+                            <span class="font-semibold">Ja</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="hasProperty" value="">
+                    <div id="propertyError" class="mt-2 text-red-600 text-sm hidden">
+                        ⚠️ Bei bestehendem Wohneigentum ist keine Förderung möglich
+                    </div>
+                </div>
+
+                <!-- Schritt 4: Gebäudestandard -->
+                <div class="mb-8 fade-in">
+                    <label class="block text-lg font-semibold text-gray-800 mb-2">
+                        4. Erfüllt Ihr Neubau den KfW-Standard?
+                    </label>
+                    <p class="text-sm text-gray-600 mb-4">
+                        ⚠️ <strong>Wichtig:</strong> Der "Klimafreundliche Neubau"-Standard ist Pflicht für die Förderung. Optional können Sie noch das QNG-Siegel anstreben.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="card-option bg-white border-2 border-gray-300 rounded-lg p-6" data-value="kfn">
+                            <div class="flex items-start">
+                                <span class="text-3xl mr-3">🌱</span>
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-1">Ja, KFN-Standard</h3>
+                                    <p class="text-sm font-semibold text-green-600 mb-2">✓ Basis-Voraussetzung (Pflicht)</p>
+                                    <div class="text-xs text-gray-500 leading-relaxed">
+                                        Ihr Neubau erfüllt die KfW-Effizienzhaus-40-Anforderungen und Nachhaltigkeitskriterien. 
+                                        <strong>Das ist die Mindestvoraussetzung</strong> für diese Förderung.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-option bg-white border-2 border-gray-300 rounded-lg p-6" data-value="qng">
+                            <div class="flex items-start">
+                                <span class="text-3xl mr-3">⭐</span>
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-1">Ja + QNG-Siegel</h3>
+                                    <p class="text-sm font-semibold text-purple-600 mb-2">★ Optional für mehr Förderung</p>
+                                    <div class="text-xs text-gray-500 leading-relaxed">
+                                        Zusätzlich zum KFN-Standard erfüllt Ihr Haus die strengeren Anforderungen für das 
+                                        "Qualitätssiegel Nachhaltiges Gebäude". <strong>Höhere Förderung möglich.</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="buildingStandard" value="">
+                    
+                    <!-- Erklär-Box -->
+                    <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <button type="button" id="toggleExplanation" class="flex items-center justify-between w-full text-left">
+                            <span class="font-semibold text-blue-900">📚 Was bedeutet das konkret für mich?</span>
+                            <span id="toggleIcon" class="text-blue-600 text-xl">+</span>
+                        </button>
+                        <div id="explanationText" class="hidden mt-3 text-sm text-gray-700 space-y-2">
+                            <p><strong>• KFN-Standard ist Pflicht:</strong></p>
+                            <p class="ml-4">Ohne den "Klimafreundlichen Neubau"-Standard (EH40-Effizienzhaus) gibt es keine KfW-300-Förderung. Alle modernen Neubauten 2026 müssen diesen Standard ohnehin erfüllen – Ihr Architekt/Bauträger plant das automatisch ein.</p>
+                            
+                            <p><strong>• QNG ist ein freiwilliges Upgrade:</strong></p>
+                            <p class="ml-4">Das "Qualitätssiegel Nachhaltiges Gebäude" ist eine <strong>zusätzliche Zertifizierung</strong>, die strengere Nachhaltigkeitskriterien verlangt. Kostet ca. 3-5% mehr, bringt aber 50.000€ mehr Kredit.</p>
+                            
+                            <p><strong>• Wie erfahre ich, was mein Haus erfüllt?</strong></p>
+                            <p class="ml-4">Fragen Sie Ihren Bauträger: "Bauen wir KfW-300-konform? Bieten Sie optional auch QNG an?" Ein Energieberater berät Sie dazu – der ist für die Förderung ohnehin verpflichtend.</p>
+                            
+                            <p><strong>• Faustregel für diesen Rechner:</strong></p>
+                            <p class="ml-4">Im Zweifel wählen Sie <strong>"Ja, KFN-Standard"</strong> ohne QNG. Das trifft auf 80-90% aller Familien zu und ist völlig ausreichend für eine satte Förderung.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Berechnen Button -->
+                <button 
+                    type="submit" 
+                    class="w-full gradient-bg text-white py-4 px-6 rounded-lg text-lg font-semibold hover:shadow-xl transition transform hover:scale-105"
+                >
+                    🔍 Förderung berechnen
+                </button>
+            </form>
+        </div>
+
+        <!-- Ergebnis -->
+        <div id="result" class="hidden"></div>
+
+        <!-- Disclaimer -->
+        <div class="bg-gray-100 border border-gray-300 rounded-lg p-4 text-sm text-gray-600">
+            <p class="flex items-start">
+                <span class="mr-2">ℹ️</span>
+                <span>
+                    <strong>Rechtlicher Hinweis:</strong> Diese Berechnung dient nur zur Orientierung und stellt keine 
+                    offizielle Zusage der KfW dar. Die tatsächliche Förderfähigkeit wird durch die KfW im Antragsverfahren 
+                    geprüft. Stand: Februar 2026.
+                </span>
+            </p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm opacity-75">KfW-300 Förderrechner © 2026 | Nicht-offizielles Tool zur Orientierung</p>
+        </div>
+    </footer>
+
+    <script>
+        // State Management
+        let formData = {
+            children: 1,
+            income: 0,
+            hasProperty: '',
+            buildingStandard: ''
+        };
+
+        // DOM Elements
+        const childrenSlider = document.getElementById('childrenSlider');
+        const childrenValue = document.getElementById('childrenValue');
+        const childrenError = document.getElementById('childrenError');
+        const incomeInput = document.getElementById('income');
+        const incomeLimit = document.getElementById('incomeLimit');
+        const incomeError = document.getElementById('incomeError');
+        const hasPropertyInput = document.getElementById('hasProperty');
+        const propertyError = document.getElementById('propertyError');
+        const buildingStandardInput = document.getElementById('buildingStandard');
+        const form = document.getElementById('kfwForm');
+        const resultDiv = document.getElementById('result');
+
+        // Children Slider Handler
+        childrenSlider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            formData.children = value;
+            childrenValue.textContent = value;
+            
+            if (value === 0) {
+                childrenError.classList.remove('hidden');
+                childrenValue.classList.add('text-red-600');
+                childrenValue.classList.remove('text-purple-600');
+            } else {
+                childrenError.classList.add('hidden');
+                childrenValue.classList.remove('text-red-600');
+                childrenValue.classList.add('text-purple-600');
+            }
+            
+            updateIncomeLimit();
+            validateIncome();
+        });
+
+        // Income Handler
+        incomeInput.addEventListener('input', (e) => {
+            formData.income = parseFloat(e.target.value) || 0;
+            validateIncome();
+        });
+
+        // Property Cards Handler
+        document.querySelectorAll('[data-value]').forEach(card => {
+            card.addEventListener('click', function() {
+                const section = this.closest('.mb-8');
+                const cards = section.querySelectorAll('.card-option');
+                const value = this.dataset.value;
+                
+                // Determine which input to update
+                if (section.querySelector('#hasProperty')) {
+                    // Property selection
+                    cards.forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    formData.hasProperty = value;
+                    hasPropertyInput.value = value;
+                    
+                    if (value === 'yes') {
+                        propertyError.classList.remove('hidden');
+                    } else {
+                        propertyError.classList.add('hidden');
+                    }
+                } else if (section.querySelector('#buildingStandard')) {
+                    // Building standard selection
+                    cards.forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    formData.buildingStandard = value;
+                    buildingStandardInput.value = value;
+                }
+            });
+        });
+
+        // Toggle Explanation Handler
+        document.getElementById('toggleExplanation').addEventListener('click', function() {
+            const explanationText = document.getElementById('explanationText');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (explanationText.classList.contains('hidden')) {
+                explanationText.classList.remove('hidden');
+                toggleIcon.textContent = '−';
+            } else {
+                explanationText.classList.add('hidden');
+                toggleIcon.textContent = '+';
+            }
+        });
+
+        // Update Income Limit Display
+        function updateIncomeLimit() {
+            const limit = calculateIncomeLimit(formData.children);
+            incomeLimit.textContent = `✓ Einkommensgrenze für ${formData.children} ${formData.children === 1 ? 'Kind' : 'Kinder'}: ${limit.toLocaleString('de-DE')} €`;
+            incomeLimit.classList.add('text-green-600', 'font-semibold');
+        }
+
+        // Calculate Income Limit
+        function calculateIncomeLimit(children) {
+            if (children === 0) return 0;
+            return 90000 + (children - 1) * 10000;
+        }
+
+        // Validate Income
+        function validateIncome() {
+            if (formData.children === 0 || formData.income === 0) {
+                incomeError.classList.add('hidden');
+                return true;
+            }
+            
+            const limit = calculateIncomeLimit(formData.children);
+            if (formData.income > limit) {
+                incomeError.textContent = `⚠️ Ihr Einkommen überschreitet die Fördergrenze von ${limit.toLocaleString('de-DE')} €`;
+                incomeError.classList.remove('hidden');
+                return false;
+            } else {
+                incomeError.classList.add('hidden');
+                return true;
+            }
+        }
+
+        // Calculate Loan Amount
+        function calculateLoanAmount(children, hasQNG) {
+            if (hasQNG) {
+                // Mit QNG-Siegel
+                if (children <= 2) return 220000;
+                if (children <= 4) return 250000;
+                return 270000; // 5+
+            } else {
+                // Ohne QNG
+                if (children <= 2) return 170000;
+                if (children <= 4) return 200000;
+                return 220000; // 5+
+            }
+        }
+
+        // Form Submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Validate all fields
+            let isValid = true;
+            let errorMessages = [];
+
+            // Check children
+            if (formData.children === 0) {
+                errorMessages.push('Sie benötigen mindestens 1 Kind für die Förderung.');
+                isValid = false;
+            }
+
+            // Check income
+            if (formData.income === 0) {
+                errorMessages.push('Bitte geben Sie Ihr Einkommen an.');
+                isValid = false;
+            } else if (!validateIncome()) {
+                const limit = calculateIncomeLimit(formData.children);
+                errorMessages.push(`Ihr Einkommen überschreitet die Fördergrenze von ${limit.toLocaleString('de-DE')} €.`);
+                isValid = false;
+            }
+
+            // Check property
+            if (formData.hasProperty === '') {
+                errorMessages.push('Bitte beantworten Sie die Frage zum Wohneigentum.');
+                isValid = false;
+            } else if (formData.hasProperty === 'yes') {
+                errorMessages.push('Bei bestehendem Wohneigentum ist leider keine Förderung möglich.');
+                isValid = false;
+            }
+
+            // Check building standard
+            if (formData.buildingStandard === '') {
+                errorMessages.push('Bitte bestätigen Sie, dass Ihr Neubau den KfW-Standard erfüllt.');
+                isValid = false;
+            }
+
+            // Show result
+            if (isValid) {
+                showSuccessResult();
+            } else {
+                showErrorResult(errorMessages);
+            }
+
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        // Show Success Result
+        function showSuccessResult() {
+            const hasQNG = formData.buildingStandard === 'qng';
+            const loanAmount = calculateLoanAmount(formData.children, hasQNG);
+            
+            resultDiv.className = 'success-box rounded-xl p-8 mb-8 fade-in pulse-animation';
+            resultDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">
+                        Herzlichen Glückwunsch!
+                    </h2>
+                    <p class="text-lg text-gray-700 mb-6">
+                        Sie haben voraussichtlich Anspruch auf einen KfW-300 Kredit in Höhe von:
+                    </p>
+                    <div class="text-5xl font-bold gradient-bg bg-clip-text text-transparent mb-6">
+                        ${loanAmount.toLocaleString('de-DE')} €
+                    </div>
+                    <div class="bg-white rounded-lg p-6 text-left space-y-2">
+                        <h3 class="font-semibold text-gray-800 mb-3">📋 Ihre Angaben:</h3>
+                        <p class="text-gray-700">👶 Kinder: ${formData.children}</p>
+                        <p class="text-gray-700">💰 Einkommen (zvE): ${formData.income.toLocaleString('de-DE')} €</p>
+                        <p class="text-gray-700">🏡 Wohneigentum: Nein</p>
+                        <p class="text-gray-700">🌱 Standard: ${hasQNG ? 'KFN-Standard + QNG-Siegel' : 'KFN-Standard (Basis)'}</p>
+                    </div>
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-gray-700">
+                        <p class="flex items-start">
+                            <span class="mr-2">💡</span>
+                            <span class="text-left">
+                                <strong>Nächster Schritt:</strong> Kontaktieren Sie die KfW oder einen zertifizierten 
+                                Energieberater, um Ihren Antrag offiziell zu stellen. Die aktuellen Zinssätze werden 
+                                täglich von der KfW festgelegt.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Show Error Result
+        function showErrorResult(messages) {
+            resultDiv.className = 'error-box rounded-xl p-8 mb-8 fade-in';
+            resultDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="text-6xl mb-4">😔</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                        Leider passen die Kriterien aktuell nicht
+                    </h2>
+                    <div class="bg-white rounded-lg p-6 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3">Folgende Voraussetzungen sind nicht erfüllt:</h3>
+                        <ul class="space-y-2">
+                            ${messages.map(msg => `<li class="flex items-start"><span class="mr-2">❌</span><span class="text-gray-700">${msg}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-gray-700">
+                        <p class="flex items-start">
+                            <span class="mr-2">💡</span>
+                            <span class="text-left">
+                                <strong>Tipp:</strong> Prüfen Sie alternative Förderprogramme oder sprechen Sie mit 
+                                einem Finanzberater über andere Finanzierungsoptionen für Ihr Bauvorhaben.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Initialize
+        updateIncomeLimit();
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "kfw300-scraper",
+  "version": "1.0.0",
+  "description": "KfW 300 Konditionen-Scraper (Node.js 20 + TypeScript)",
+  "main": "dist/index.js",
+  "scripts": {
+    "kfw:300": "tsx scripts/kfw/fetch-konditionen.ts",
+    "build": "tsc -p tsconfig.json"
+  },
+  "keywords": ["kfw", "zinsen", "scraper", "typescript"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
