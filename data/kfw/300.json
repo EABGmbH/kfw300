@@ -1,0 +1,49 @@
+{
+  "source": "https://www.kfw-formularsammlung.de/KonditionenanzeigerINet/KonditionenAnzeiger",
+  "stand": "18.02.2026",
+  "program": 300,
+  "updatedAt": "2026-02-23T08:09:06.643Z",
+  "rates": [
+    {
+      "laufzeitJahre": 10,
+      "tilgfreiJahre": 2,
+      "zinsbindungJahre": 10,
+      "sollzinsProzent": 0.01,
+      "effektivzinsProzent": 0.01,
+      "auszahlungProzent": 100,
+      "bereitstellungsprovProzentProMonat": 0.15,
+      "gueltigAb": "23.10.2025"
+    },
+    {
+      "laufzeitJahre": 25,
+      "tilgfreiJahre": 3,
+      "zinsbindungJahre": 10,
+      "sollzinsProzent": 0.99,
+      "effektivzinsProzent": 0.99,
+      "auszahlungProzent": 100,
+      "bereitstellungsprovProzentProMonat": 0.15,
+      "gueltigAb": "18.02.2026"
+    },
+    {
+      "laufzeitJahre": 35,
+      "tilgfreiJahre": 5,
+      "zinsbindungJahre": 10,
+      "sollzinsProzent": 1.21,
+      "effektivzinsProzent": 1.22,
+      "auszahlungProzent": 100,
+      "bereitstellungsprovProzentProMonat": 0.15,
+      "gueltigAb": "18.02.2026"
+    }
+  ],
+  "interhyp": {
+    "source_name": "Interhyp",
+    "source_url": "https://www.interhyp.de/zinsen/",
+    "rates": {
+      "zinsbindung_10": {
+        "zinsbindung": "10 Jahre",
+        "beleihung": "< 90%",
+        "zins": 3.91
+      }
+    }
+  }
+}
