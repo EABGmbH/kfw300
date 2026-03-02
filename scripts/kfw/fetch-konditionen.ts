@@ -238,34 +238,33 @@ async function fetchMarketRateInterhyp(): Promise<number | null> {
     return cellMatches.map((match) => cellText(match[2]));
   };
 
-  const headerCells = parseRowCells(rowMatches[0]);
-  const targetColIndex = headerCells.findIndex((header) => /Beleihungsauslauf.*>\s*90/i.test(header));
-  if (targetColIndex < 0) {
-    return null;
-  }
-
-  let valueText: string | null = null;
+  let parsed: number | null = null;
   for (const rowHtml of rowMatches.slice(1)) {
     const cells = parseRowCells(rowHtml);
-    if (cells.length <= targetColIndex) continue;
+    if (cells.length < 2) continue;
 
-    const rowLabel = cells[0];
-    if (/^10$/.test(rowLabel)) {
-      valueText = cells[targetColIndex];
-      break;
+    const rowLabel = normalizeWhitespace(cells[0]);
+    if (!/^10$/.test(rowLabel)) continue;
+
+    const rateCells = cells.slice(1);
+    const parsedRates = rateCells
+      .map((cell) => cell.match(/(\d+,\d+)\s*%/))
+      .filter((match): match is RegExpMatchArray => Boolean(match))
+      .map((match) => germanToNumber(match[1]))
+      .filter((value) => Number.isFinite(value) && value > 0 && value < 15);
+
+    if (parsedRates.length === 0) {
+      continue;
     }
+
+    parsed = parsedRates[parsedRates.length - 1] ?? null;
+    break;
   }
 
-  if (!valueText) {
+  if (parsed === null) {
     return null;
   }
 
-  const match = valueText.match(/(\d+,\d+)\s*%/);
-  if (!match) {
-    return null;
-  }
-
-  const parsed = germanToNumber(match[1]);
   if (!Number.isFinite(parsed) || parsed < 0 || parsed > 15) {
     return null;
   }
