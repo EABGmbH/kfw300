@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="offer-api-base" content="">
     <title>KfW 300 Förderrechner - Wohneigentum für Familien</title>
     <style>
         * {
@@ -511,6 +512,184 @@
             display: none;
         }
 
+        .offer-widget {
+            margin-top: 24px;
+            background: #ffffff;
+            border: 2px solid #dce6e0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .offer-widget.hidden {
+            display: none;
+        }
+
+        .offer-widget h3 {
+            color: #2f4b3f;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .offer-widget-intro {
+            color: #4b5852;
+            font-size: 0.95em;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .offer-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .offer-grid.two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .offer-field-full {
+            grid-column: 1 / -1;
+        }
+
+        .offer-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: #35453d;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .offer-grid input,
+        .offer-grid textarea {
+            width: 100%;
+            border: 2px solid #dbe4df;
+            border-radius: 10px;
+            padding: 11px 12px;
+            font-size: 0.98em;
+            font-family: inherit;
+        }
+
+        .offer-grid input:focus,
+        .offer-grid textarea:focus {
+            outline: none;
+            border-color: #50685b;
+            box-shadow: 0 0 0 3px rgba(80, 104, 91, 0.14);
+        }
+
+        .offer-question {
+            border: 1px solid #dbe4df;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin: 8px 0;
+            background: #f9fbfa;
+        }
+
+        .offer-question strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #32483d;
+        }
+
+        .offer-toggle-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .offer-toggle-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .offer-toggle-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .offer-toggle-option span {
+            display: block;
+            text-align: center;
+            padding: 9px 10px;
+            border: 2px solid #d3dfd9;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #355044;
+            background: #fff;
+        }
+
+        .offer-toggle-option input:checked + span {
+            background: #50685b;
+            border-color: #50685b;
+            color: #fff;
+        }
+
+        .offer-conditional {
+            border: 1px solid #dbe4df;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+            background: #f8faf9;
+        }
+
+        .offer-conditional.hidden {
+            display: none;
+        }
+
+        .offer-consent {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            color: #2c3f35;
+            font-weight: 500;
+        }
+
+        .offer-status {
+            display: none;
+            margin: 12px 0 14px;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .offer-status.success {
+            display: block;
+            background: #e9f7ef;
+            color: #1f6b3f;
+            border: 1px solid #bde3cb;
+        }
+
+        .offer-status.error {
+            display: block;
+            background: #fff0f0;
+            color: #8b2f2f;
+            border: 1px solid #f1c6c6;
+        }
+
+        .offer-submit-btn {
+            margin-top: 14px;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            background: #50685b;
+            color: #fff;
+            width: 100%;
+        }
+
+        .offer-submit-btn:hover {
+            background: #42574c;
+        }
+
+        .offer-submit-btn:disabled {
+            background: #95a79d;
+            cursor: not-allowed;
+        }
+
         .ergebnis-summary-box {
             background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             border-left: 6px solid #4caf50;
@@ -806,6 +985,14 @@
             div[style*="grid-template-columns: 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
             }
+
+            .offer-grid.two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .offer-toggle-row {
+                flex-direction: column;
+            }
         }
     </style>
     
@@ -980,13 +1167,12 @@
     </div>
 
     <script>
-        // JSON URLs - für lokale Tests wird die lokale Datei verwendet
-        const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/EABGmbH/kfw300/main/data/kfw/300.json';
-        const LOCAL_JSON_URL = './data/kfw/300.json';
-        
-        // Für lokale Tests: setze auf true, für Produktion: false
-        const USE_LOCAL_JSON = false;
-        
+        // JSON-Quellen: IONOS zuerst (täglich per Cronjob aktuell), GitHub als Fallback
+        const JSON_URLS = [
+            './data/kfw/300.json',  // primär: IONOS (aktuellster Stand)
+            'https://raw.githubusercontent.com/EABGmbH/kfw300/main/data/kfw/300.json' // Fallback: GitHub
+        ];
+
         // Zinsdaten global speichern
         let zinsdaten = null;
 
@@ -1085,21 +1271,21 @@
             return 'unbekannt';
         }
 
-        // Lade Zinssätze beim Start
+        // Lade Zinssätze beim Start — IONOS zuerst, GitHub als Fallback
         async function loadZinssaetze() {
-            const jsonUrl = USE_LOCAL_JSON ? LOCAL_JSON_URL : GITHUB_JSON_URL;
-            
-            try {
-                const response = await fetch(jsonUrl);
-                if (!response.ok) throw new Error('JSON konnte nicht geladen werden');
-                
-                zinsdaten = await response.json();
-                console.log('✅ Zinssätze geladen:', zinsdaten);
-            } catch (error) {
-                console.error('❌ Fehler beim Laden der Zinssätze:', error);
-                // Fallback: Zeige "Tagesaktuell auf kfw.de" wenn Laden fehlschlägt
-                zinsdaten = null;
+            for (const url of JSON_URLS) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) continue;
+                    zinsdaten = await response.json();
+                    console.log('✅ Zinssätze geladen von:', url, zinsdaten);
+                    return;
+                } catch (error) {
+                    console.warn('⚠️ Zinssätze nicht ladbar von:', url, error);
+                }
             }
+            console.error('❌ Zinssätze konnten von keiner Quelle geladen werden');
+            zinsdaten = null;
         }
 
         // Form Data
@@ -1109,6 +1295,8 @@
             hasProperty: '',
             buildingStandard: ''
         };
+
+        let latestCalculation = null;
 
         let currentStep = 1;
 
@@ -1524,7 +1712,7 @@
                         <p style="color: #155724; font-size: 0.95em; line-height: 1.4; margin-bottom: 20px; font-weight: 600;">
                             Jetzt Energieberatung anfragen und direkt 10 % Nachlass sichern.
                         </p>
-                        <button onclick="window.location.href='https://energy-advice-bavaria.de/kontakt/?tab=offer-tab-pane#section-79'" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s;" onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+                        <button onclick="openOfferPage()" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.3s;" onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
                             Unverbindliches Angebot anfordern
                         </button>
                     </div>
@@ -1537,11 +1725,313 @@
                 </div>
             `;
 
+            latestCalculation = {
+                timestamp: new Date().toISOString(),
+                formData: {
+                    children: formData.children,
+                    income: formData.income,
+                    hasProperty: formData.hasProperty,
+                    buildingStandard: formData.buildingStandard
+                },
+                result: {
+                    loanAmount: amount,
+                    hasQNG,
+                    kfwZins: kfwAvgZins,
+                    marketZins: interhypZins,
+                    marketSourceName,
+                    marketSourceUrl,
+                    stand: updatedLabel
+                }
+            };
+
             resultSection.classList.remove('hidden');
             resultSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        async function generatePDF() {
+        async function openOfferPage() {
+            try {
+                localStorage.setItem('angebotRechnerPayload', JSON.stringify(latestCalculation || {}));
+            } catch (error) {
+                console.warn('Rechnerdaten konnten nicht gespeichert werden.', error);
+            }
+
+            try {
+                await generatePDF({ download: false, storeForOffer: true, silent: true });
+            } catch (error) {
+                console.warn('Rechner-PDF konnte nicht für das Angebotsformular zwischengespeichert werden.', error);
+            }
+
+            window.location.href = 'angebot.html';
+        }
+
+        function byId(id) {
+            return document.getElementById(id);
+        }
+
+        function getCheckedValue(name) {
+            const checked = document.querySelector('input[name="' + name + '"]:checked');
+            return checked ? checked.value : '';
+        }
+
+        function getOfferApiEndpoint() {
+            const meta = document.querySelector('meta[name="offer-api-base"]');
+            const base = meta ? String(meta.getAttribute('content') || '').trim() : '';
+            if (base) {
+                return base.replace(/\/$/, '') + '/offer-request.php';
+            }
+            return './api/offer-request.php';
+        }
+
+        function showOfferStatus(message, success) {
+            const box = byId('offerStatus');
+            if (!box) return;
+            box.className = success ? 'offer-status success' : 'offer-status error';
+            box.textContent = message;
+        }
+
+        function clearOfferStatus() {
+            const box = byId('offerStatus');
+            if (!box) return;
+            box.className = 'offer-status';
+            box.textContent = '';
+        }
+
+        function updateOfferAutoFields() {
+            const ort = byId('offerOrt') && byId('offerOrt').value ? String(byId('offerOrt').value).trim() : '';
+            const investOrt = byId('offerInvestOrt') && byId('offerInvestOrt').value ? String(byId('offerInvestOrt').value).trim() : '';
+            const vorname = byId('offerVorname') && byId('offerVorname').value ? String(byId('offerVorname').value).trim() : '';
+            const nachname = byId('offerNachname') && byId('offerNachname').value ? String(byId('offerNachname').value).trim() : '';
+            const adresseIdentisch = getCheckedValue('offerAdresseIdentisch') || 'ja';
+            const ortDatum = byId('offerOrtDatum');
+            const unterschrift = byId('offerUnterschrift');
+            const dateNow = new Date().toLocaleDateString('de-DE');
+            const finalOrt = adresseIdentisch === 'nein' ? (investOrt || ort) : ort;
+
+            if (ortDatum) {
+                ortDatum.value = finalOrt ? (finalOrt + ', ' + dateNow) : dateNow;
+            }
+            if (unterschrift) {
+                unterschrift.value = (vorname + ' ' + nachname).trim();
+            }
+        }
+
+        function toggleOfferConditionalPanels() {
+            const adresseIdentisch = getCheckedValue('offerAdresseIdentisch') || 'ja';
+            const pvGeplant = getCheckedValue('offerPvGeplant') || 'nein';
+            const speicherGeplant = getCheckedValue('offerSpeicherGeplant') || 'nein';
+
+            const investPanel = byId('offerInvestPanel');
+            const pvPanel = byId('offerPvPanel');
+            const speicherPanel = byId('offerSpeicherPanel');
+
+            if (investPanel) investPanel.classList.toggle('hidden', adresseIdentisch === 'ja');
+            if (pvPanel) pvPanel.classList.toggle('hidden', pvGeplant !== 'ja');
+            if (speicherPanel) speicherPanel.classList.toggle('hidden', speicherGeplant !== 'ja');
+
+            updateOfferAutoFields();
+        }
+
+        function toggleOfferForm() {
+            const widget = byId('offerWidget');
+            if (!widget) return;
+            widget.classList.toggle('hidden');
+            if (!widget.classList.contains('hidden')) {
+                widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function collectOfferData() {
+            const pdfInput = byId('offerEingabeplanPdf');
+            const file = pdfInput && pdfInput.files && pdfInput.files.length > 0 ? pdfInput.files[0] : null;
+
+            return {
+                firma: byId('offerFirma') ? byId('offerFirma').value.trim() : '',
+                vorname: byId('offerVorname') ? byId('offerVorname').value.trim() : '',
+                nachname: byId('offerNachname') ? byId('offerNachname').value.trim() : '',
+                strasse: byId('offerStrasse') ? byId('offerStrasse').value.trim() : '',
+                hausnummer: byId('offerHausnummer') ? byId('offerHausnummer').value.trim() : '',
+                plz: byId('offerPlz') ? byId('offerPlz').value.trim() : '',
+                ort: byId('offerOrt') ? byId('offerOrt').value.trim() : '',
+                email: byId('offerEmail') ? byId('offerEmail').value.trim() : '',
+                handy: byId('offerHandy') ? byId('offerHandy').value.trim() : '',
+                adresseIdentisch: getCheckedValue('offerAdresseIdentisch') || 'ja',
+                investStrasse: byId('offerInvestStrasse') ? byId('offerInvestStrasse').value.trim() : '',
+                investHausnummer: byId('offerInvestHausnummer') ? byId('offerInvestHausnummer').value.trim() : '',
+                investPlz: byId('offerInvestPlz') ? byId('offerInvestPlz').value.trim() : '',
+                investOrt: byId('offerInvestOrt') ? byId('offerInvestOrt').value.trim() : '',
+                lueftungGeplant: getCheckedValue('offerLueftungGeplant') || 'nein',
+                pvGeplant: getCheckedValue('offerPvGeplant') || 'nein',
+                pvKwp: byId('offerPvKwp') ? byId('offerPvKwp').value.trim() : '',
+                speicherGeplant: getCheckedValue('offerSpeicherGeplant') || 'nein',
+                speicherKwh: byId('offerSpeicherKwh') ? byId('offerSpeicherKwh').value.trim() : '',
+                notizen: byId('offerNotizen') ? byId('offerNotizen').value.trim() : '',
+                ortDatum: byId('offerOrtDatum') ? byId('offerOrtDatum').value.trim() : '',
+                unterschrift: byId('offerUnterschrift') ? byId('offerUnterschrift').value.trim() : '',
+                consent: !!(byId('offerConsent') && byId('offerConsent').checked),
+                eingabeplanPdf: file
+            };
+        }
+
+        function validateOfferData(offerData) {
+            const required = [
+                ['vorname', 'Vorname'],
+                ['nachname', 'Nachname'],
+                ['strasse', 'Straße'],
+                ['hausnummer', 'Hausnummer'],
+                ['plz', 'PLZ'],
+                ['ort', 'Ort'],
+                ['email', 'E-Mail'],
+                ['handy', 'Handy'],
+                ['ortDatum', 'Ort, Datum'],
+                ['unterschrift', 'Unterschrift']
+            ];
+
+            for (const [key, label] of required) {
+                if (!offerData[key]) {
+                    return 'Bitte füllen Sie das Pflichtfeld „' + label + '“ aus.';
+                }
+            }
+
+            const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(offerData.email);
+            if (!emailOk) {
+                return 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+            }
+
+            if (offerData.adresseIdentisch === 'nein') {
+                if (!offerData.investStrasse || !offerData.investHausnummer || !offerData.investPlz || !offerData.investOrt) {
+                    return 'Bitte ergänzen Sie die Adresse des Investitionsstandorts.';
+                }
+            }
+
+            if (offerData.pvGeplant === 'ja' && !offerData.pvKwp) {
+                return 'Bitte geben Sie die geplante PV-Leistung (kWp) an.';
+            }
+
+            if (offerData.speicherGeplant === 'ja' && !offerData.speicherKwh) {
+                return 'Bitte geben Sie die geplante Speichergröße (kWh) an.';
+            }
+
+            const file = offerData.eingabeplanPdf;
+            if (file) {
+                const fileName = String(file.name || '').toLowerCase();
+                const isPdf = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+                if (!isPdf) return 'Der Eingabeplan muss als PDF hochgeladen werden.';
+                if (file.size > 10 * 1024 * 1024) return 'Die PDF-Datei darf maximal 10 MB groß sein.';
+            }
+
+            if (!offerData.consent) {
+                return 'Bitte bestätigen Sie die Richtigkeit und Vollständigkeit der Angaben.';
+            }
+
+            return '';
+        }
+
+        function initOfferForm() {
+            const widget = byId('offerWidget');
+            if (!widget) return;
+
+            const watchIds = [
+                'offerOrt',
+                'offerInvestOrt',
+                'offerVorname',
+                'offerNachname'
+            ];
+
+            watchIds.forEach((id) => {
+                const field = byId(id);
+                if (field) {
+                    field.addEventListener('input', updateOfferAutoFields);
+                }
+            });
+
+            const radios = document.querySelectorAll('input[name="offerAdresseIdentisch"], input[name="offerPvGeplant"], input[name="offerSpeicherGeplant"]');
+            radios.forEach((radio) => {
+                radio.addEventListener('change', toggleOfferConditionalPanels);
+            });
+
+            toggleOfferConditionalPanels();
+            updateOfferAutoFields();
+        }
+
+        async function submitOfferRequest() {
+            clearOfferStatus();
+
+            const offerData = collectOfferData();
+            const validationError = validateOfferData(offerData);
+            if (validationError) {
+                showOfferStatus(validationError, false);
+                return;
+            }
+
+            const submitBtn = byId('offerSubmitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Anfrage wird gesendet...';
+            }
+
+            try {
+                const payload = new FormData();
+                payload.append('offer', JSON.stringify({
+                    firma: offerData.firma,
+                    vorname: offerData.vorname,
+                    nachname: offerData.nachname,
+                    strasse: offerData.strasse,
+                    hausnummer: offerData.hausnummer,
+                    plz: offerData.plz,
+                    ort: offerData.ort,
+                    email: offerData.email,
+                    handy: offerData.handy,
+                    adresseIdentisch: offerData.adresseIdentisch,
+                    investStrasse: offerData.investStrasse,
+                    investHausnummer: offerData.investHausnummer,
+                    investPlz: offerData.investPlz,
+                    investOrt: offerData.investOrt,
+                    lueftungGeplant: offerData.lueftungGeplant,
+                    pvGeplant: offerData.pvGeplant,
+                    pvKwp: offerData.pvKwp,
+                    speicherGeplant: offerData.speicherGeplant,
+                    speicherKwh: offerData.speicherKwh,
+                    notizen: offerData.notizen,
+                    ortDatum: offerData.ortDatum,
+                    unterschrift: offerData.unterschrift
+                }));
+                payload.append('calculator', JSON.stringify(latestCalculation || {}));
+
+                if (offerData.eingabeplanPdf) {
+                    payload.append('eingabeplanPdf', offerData.eingabeplanPdf);
+                }
+
+                const response = await fetch(getOfferApiEndpoint(), {
+                    method: 'POST',
+                    body: payload
+                });
+
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || !result.ok) {
+                    throw new Error(result.message || 'Die Anfrage konnte nicht versendet werden.');
+                }
+
+                showOfferStatus('Vielen Dank! Ihre Anfrage wurde versendet. Sie erhalten in Kürze eine Bestätigungs-E-Mail.', true);
+
+                const form = byId('offerForm');
+                if (form) form.reset();
+                toggleOfferConditionalPanels();
+                updateOfferAutoFields();
+            } catch (error) {
+                const message = error && error.message ? error.message : 'Die Anfrage konnte nicht versendet werden.';
+                showOfferStatus(message, false);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Anfrage per E-Mail bestätigen';
+                }
+            }
+        }
+
+        async function generatePDF(options = {}) {
+            const shouldDownload = options.download !== false;
+            const shouldStoreForOffer = options.storeForOffer === true;
+            const silent = options.silent === true;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4', compress: true });
             
@@ -1874,12 +2364,34 @@
                 // Fußzeile: QR-Code
                 addFooter(doc);
                 
-                // PDF speichern
-                doc.save('KfW-300-Foerderung.pdf');
+                const blob = doc.output('blob');
+
+                if (shouldStoreForOffer) {
+                    try {
+                        const dataUrl = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = () => reject(new Error('PDF konnte nicht in Base64 umgewandelt werden.'));
+                            reader.readAsDataURL(blob);
+                        });
+                        localStorage.setItem('angebotRechnerPdfDataUrl', String(dataUrl || ''));
+                    } catch (storageError) {
+                        console.warn('PDF-Cache für Angebotsseite fehlgeschlagen.', storageError);
+                    }
+                }
+
+                if (shouldDownload) {
+                    doc.save('KfW-300-Foerderung.pdf');
+                }
+
+                return new File([blob], 'KfW-300-Foerderung.pdf', { type: 'application/pdf' });
                 
             } catch (error) {
                 console.error('Fehler beim PDF-Erstellen:', error);
-                alert('Fehler beim Erstellen der PDF. Bitte versuchen Sie es erneut.');
+                if (!silent) {
+                    alert('Fehler beim Erstellen der PDF. Bitte versuchen Sie es erneut.');
+                }
+                return null;
             }
         }
 

@@ -1,8 +1,12 @@
-name: kfw300 daily update
+name: kfw300 daily update (KfW backup)
+# Hinweis: Das Interhyp-Scraping läuft primär als IONOS-Cronjob (api/cron-zinsen.php).
+# Dieser Workflow aktualisiert nur noch die KfW-Konditionen auf GitHub als Fallback-Quelle.
+# Die Website nutzt zuerst die IONOS-Datei (data/kfw/300.json) und fällt
+# erst bei Fehler auf diese GitHub-Datei zurück.
 
 on:
   schedule:
-    - cron: '0 4,5 * * *'
+    - cron: '0 7,8 * * *'
   workflow_dispatch:
 
 permissions:
@@ -15,11 +19,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ensure 06:00 Europe/Berlin
+      - name: Ensure 09:00 Europe/Berlin
         id: berlin-time
         run: |
           HOUR=$(TZ=Europe/Berlin date +%H)
-          if [ "$HOUR" != "06" ]; then
+          if [ "$HOUR" != "09" ]; then
             echo "run=false" >> "$GITHUB_OUTPUT"
             echo "Skipping run at $(TZ=Europe/Berlin date)"
           else
