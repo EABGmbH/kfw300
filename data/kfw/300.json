@@ -1,8 +1,8 @@
 {
   "source": "https://www.kfw-formularsammlung.de/KonditionenanzeigerINet/KonditionenAnzeiger",
-  "stand": "07.05.2026",
+  "stand": "18.05.2026",
   "program": 300,
-  "updatedAt": "2026-05-10T07:47:14.792Z",
+  "updatedAt": "2026-05-16T07:41:19.105Z",
   "rates": [
     {
       "laufzeitJahre": 10,
@@ -42,7 +42,7 @@
       "zinsbindung_10": {
         "zinsbindung": "10 Jahre",
         "beleihung": "< 90%",
-        "zins": 4.07
+        "zins": 4.06
       }
     }
   }
