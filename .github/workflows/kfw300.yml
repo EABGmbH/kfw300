@@ -1,12 +1,14 @@
 name: kfw300 daily update (KfW backup)
 # Hinweis: Das Interhyp-Scraping läuft primär als IONOS-Cronjob (api/cron-zinsen.php).
-# Dieser Workflow aktualisiert nur noch die KfW-Konditionen auf GitHub als Fallback-Quelle.
-# Die Website nutzt zuerst die IONOS-Datei (data/kfw/300.json) und fällt
-# erst bei Fehler auf diese GitHub-Datei zurück.
+# Dieser Workflow aktualisiert die KfW-Konditionen auf GitHub als Hauptquelle.
+# Die Website lädt zuerst die GitHub-Datei (raw.githubusercontent.com) und fällt
+# erst bei Fehler auf die IONOS-Datei (data/kfw/300.json) zurück.
 
 on:
   schedule:
-    - cron: '0 7,8 * * *'
+    # Off-peak Minute, damit GitHub den Lauf nicht unter Last verwirft.
+    # 06:23 UTC = 08:23 Berlin (Sommer) / 07:23 Berlin (Winter) — einmal täglich.
+    - cron: '23 6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -19,35 +21,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Ensure 09:00 Europe/Berlin
-        id: berlin-time
-        run: |
-          HOUR=$(TZ=Europe/Berlin date +%H)
-          if [ "$HOUR" != "09" ]; then
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping run at $(TZ=Europe/Berlin date)"
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "Running at $(TZ=Europe/Berlin date)"
-          fi
-
       - name: Setup Node
-        if: steps.berlin-time.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
-        if: steps.berlin-time.outputs.run == 'true'
         run: npm ci
 
       - name: Fetch KfW 300 rates
-        if: steps.berlin-time.outputs.run == 'true'
         run: npm run kfw:300
 
       - name: Commit and push if changed
-        if: steps.berlin-time.outputs.run == 'true'
         run: |
           if git diff --quiet -- data/kfw/300.json; then
             echo "No changes in data/kfw/300.json"
