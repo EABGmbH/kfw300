@@ -1169,8 +1169,8 @@
     <script>
         // JSON-Quellen: IONOS zuerst (täglich per Cronjob aktuell), GitHub als Fallback
         const JSON_URLS = [
-            './data/kfw/300.json',  // primär: IONOS (aktuellster Stand)
-            'https://raw.githubusercontent.com/EABGmbH/kfw300/main/data/kfw/300.json' // Fallback: GitHub
+            'https://raw.githubusercontent.com/EABGmbH/kfw300/main/data/kfw/300.json', // primär: GitHub (aktuellster Stand)
+            './data/kfw/300.json'  // Fallback: IONOS (falls GitHub Raw nicht erreichbar)
         ];
 
         // Zinsdaten global speichern
