@@ -1,8 +1,8 @@
 {
   "source": "https://www.kfw-formularsammlung.de/KonditionenanzeigerINet/KonditionenAnzeiger",
-  "stand": "21.05.2026",
+  "stand": "28.05.2026",
   "program": 300,
-  "updatedAt": "2026-05-27T07:49:34.890Z",
+  "updatedAt": "2026-05-28T07:44:16.968Z",
   "rates": [
     {
       "laufzeitJahre": 10,
@@ -18,21 +18,21 @@
       "laufzeitJahre": 25,
       "tilgfreiJahre": 3,
       "zinsbindungJahre": 10,
-      "sollzinsProzent": 1.08,
-      "effektivzinsProzent": 1.09,
+      "sollzinsProzent": 0.98,
+      "effektivzinsProzent": 0.98,
       "auszahlungProzent": 100,
       "bereitstellungsprovProzentProMonat": 0.15,
-      "gueltigAb": "15.04.2026"
+      "gueltigAb": "28.05.2026"
     },
     {
       "laufzeitJahre": 35,
       "tilgfreiJahre": 5,
       "zinsbindungJahre": 10,
-      "sollzinsProzent": 1.32,
-      "effektivzinsProzent": 1.33,
+      "sollzinsProzent": 1.21,
+      "effektivzinsProzent": 1.22,
       "auszahlungProzent": 100,
       "bereitstellungsprovProzentProMonat": 0.15,
-      "gueltigAb": "15.04.2026"
+      "gueltigAb": "28.05.2026"
     }
   ],
   "interhyp": {
